@@ -197,7 +197,7 @@ Once your project has been created, let's navigate to our frontend folder with `
 
 Your project will start at [http://localhost:3000](http://localhost:3000).
 
-![next-js-web.png](/images/next-js-web.png)
+![next-js-web.png](/images/01-epic-next/next-js-web.png)
 
 ### Setting Up Shadcn UI for styling
 
@@ -246,7 +246,7 @@ That's it. We now have Shadcn UI installed and ready to go.
 
 You will see the new `utils` folder and `components.json` file.
 
-![component-file.png](/images/component-file.png)
+![component-file.png](/images/01-epic-next/component-file.png)
 
 Let's add our first component by running the following command in your `frontend` folder, which will install our button component.
 
@@ -341,7 +341,7 @@ Once everything gets installed, you will be greeted by Strapi's register page.
 
 Go ahead and create your first **admin user**. Once done, you will be greeted by the dashboard.
 
-![strapi-dashboard.png](/images/strapi-dashboard.png)
+![strapi-dashboard.png](/images/01-epic-next/strapi-dashboard.png)
 
 Congratulations. We now have our Strapi app set up.
 
@@ -363,7 +363,7 @@ Let's start by navigating to `Content-Type Builder` under `SINGLE TYPES` and cli
 
 We are going to name it `Home Page`.
 
-![single-type.gif](/images/single-type.gif)
+![single-type.gif](/images/01-epic-next/single-type.gif)
 
 We will add to text fields.
 
@@ -374,7 +374,7 @@ Once done, click save.
 
 Now, let's add some basic data.
 
-![adding-data.gif](/images/adding-data.gif)
+![adding-data.gif](/images/01-epic-next/adding-data.gif)
 
 After adding the title text and description, make sure to click publish.
 
@@ -390,7 +390,7 @@ But first, we must give Strapi permission to serve those endpoints to our client
 
 Since this is public data, we can accomplish this with the following permissions.
 
-![giving-public-access.gif](/images/giving-public-access.gif)
+![giving-public-access.gif](/images/01-epic-next/giving-public-access.gif)
 
 Navigate to Settings -> USERS & PERMISSION PLUGIN -> Roles -> Public
 
@@ -400,7 +400,7 @@ We should now be able to access our data by making a `GET` request to `http://lo
 
 Let's give it a try.
 
-![home-page-data.png](/images/home-page-data.png)
+![home-page-data.png](/images/01-epic-next/home-page-data.png)
 
 Awesome. We must get our initial **Home Page** data from our endpoint.
 
