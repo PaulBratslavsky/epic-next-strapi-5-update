@@ -489,5 +489,3 @@ I want to build this out in public, so feel free to add comments and questions i
 I hope you had as much fun as I did, and I will see you in the next post.
 
 You can find the project repo [here](https://github.com/PaulBratslavsky/epic-next-strapi-5-update/tree/01-epic-next)
-
-You can check out the first video here if you prefer that format.
