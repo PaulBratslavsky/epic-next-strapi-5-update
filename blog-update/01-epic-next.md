@@ -1,12 +1,3 @@
-**IMPORTANT UPDATE**
-Hello, you wonderful people. Paul here. I created this tutorial using Strapi 4 with Next JS, so it is not up to date with the recent release of Strapi 5.
-
-Due to its popularity and many requests, I will start working on updating this post to reflect the new changes.
-
-I will use the latest version of Next.js and Strapi 5. And update the posts as soon as possible.
-
-Thank you for your patience while I work on the updates.
-
 Hello, you wonderful people; in this post of many, I would like to introduce you to what we will be building.
 
 This post is the first of many in our Epic Strapi Next.js 14 tutorial Series. You can find the outline for upcoming post here.
