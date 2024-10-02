@@ -1808,3 +1808,5 @@ We finished by covering how to handle **loading**, **not found**, and **errors**
 I can't wait to see the next post, where we cover how to create our **Sign In** and **Sign Up** pages. This will include form validation with `Zod`, handling form submission with `server actions`, creating and storing `http only` cookies, and protecting our routes with Next.js `middleware`.
 
 I am so excited. Thanks for checking out this post. I look forward to seeing you in the next one.
+
+Project Repo: https://github.com/PaulBratslavsky/epic-next-strapi-5-update/tree/03-epic-next
