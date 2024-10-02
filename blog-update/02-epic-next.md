@@ -752,6 +752,8 @@ export function HeroSection({ data }: { readonly data: HeroSectionProps }) {
 
 We are now getting and displaying our data from Strapi but here are still more improvements that we must make in this component.
 
+![17-hero-section-component.png](https://api-prod.strapi.io/uploads/17_hero_section_component_891518b50c.png)
+
 Like to use Next **Image** and not have to hard code "http://localhost:1337" path that we append to our image url but instead should get it from our `.env` variable.
 
 We will do this in the next post, where we will finish up our **Hero Section** component and start working on the **Features Component**
@@ -783,8 +785,7 @@ async function getStrapiData(path: string) {
   try {
     const response = await fetch(url.href, { cache: 'no-store' });
     const data = await response.json();
-    const flattenedData = flattenAttributes(data);
-    return flattenedData;
+    return data;
   } catch (error) {
     console.error(error);
   }
