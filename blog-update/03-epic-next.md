@@ -812,7 +812,7 @@ We are going to call it `Global`. Go ahead and add the following fields.
 Text -> Short Text - title
 Text -> Long Text - description
 
-![015-global-content.gif](https://api-prod.strapi.io/uploads/015_global_content_796d4dd78a.gif)
+![015-global-content.gif](/images/03-epic-next/015-global-content.gif)
 
 Now, let's create the **Header** component. To start with, it will have two links: logo text and a `call to action` button.
 
@@ -820,7 +820,7 @@ Now, let's create the **Header** component. To start with, it will have two link
 
 In Strapi, inside the global page, let's add the following component.
 
-![016-add-heading-component.gif](https://api-prod.strapi.io/uploads/016_add_heading_component_ca255fe78c.gif)
+![016-add-heading-component.gif](/images/03-epic-next/016-add-heading-component.gif)
 
 - Click on `add another field to this single type.`
 - Select the `Component` field type
@@ -830,9 +830,11 @@ In Strapi, inside the global page, let's add the following component.
 - In the `Name` field, we will enter **header**
 - Finally, click on the `Add the first field to component` button
 
-Now, let's create our first header field to store our logo text. Since it will be a link, we can reuse a previously created **Link** component.
+Now let's create two additional components called `logoText` and `ctaButton` to store our logo text and call to action button data.
 
-![017-create-logo-text.gif](https://api-prod.strapi.io/uploads/017_create_logo_text_77c33219b1.gif)
+Since both will be links, we can reuse a previously created **Link** component.
+
+![017-create-logo-text.gif](/images/03-epic-next/017-create-logo-text.gif)
 
 - Select the `Component` field type
 - Click on `Use an existing component`
@@ -840,8 +842,6 @@ Now, let's create our first header field to store our logo text. Since it will b
 - Inside the `Select a component` field, select **Link** component
 - In the `Name` field, we will enter **logoText**
 - Select `Single component` and click the `Finish` button
-
-![018-create-link.gif](https://api-prod.strapi.io/uploads/018_create_link_3e668df06d.gif)
 
 - Select `Add another field to this component`
 - Select the `Component` field type
@@ -854,7 +854,7 @@ Now, let's create our first header field to store our logo text. Since it will b
 
 The final **Header** component should look like the following.
 
-![019-header.png](https://api-prod.strapi.io/uploads/019_header_8ffef4e1b8.png)
+![019-header.png](/images/03-epic-next/019-header.png)
 
 Now that we are getting the hang of modeling content think about how we can represent our footer.
 
@@ -870,20 +870,21 @@ Can you do it on your own?
 
 Our **Footer** will have the following fields.
 
-![021-footer-fields.png](https://api-prod.strapi.io/uploads/021_footer_fields_96891b42ee.png)
+![021-footer-fields.png](/images/03-epic-next/021-footer-fields.png)
 
 Our footer has the following three items.
+
 If you get stuck at any point, you can always ask in the comments or join us at **Strapi Open Office** hours on [Discord](https://discord.com/invite/strapi) 12:30 pm CST Monday - Friday.
 
 Let's add some data to our **Global** single type.
 
-![022-add-global-content.gif](https://api-prod.strapi.io/uploads/022_add_global_content_8f2ca190f0.gif)
+![022-add-global-content.gif](/images/03-epic-next/022-add-global-content.gif)
 
 Now, let's give the proper permissions so we can access the data from our Strapi API.
 
 Navigate to `Setting` -> `USERS AND PERMISSION PLUGIN` -> `Roles` -> `Public` -> `Global` and check the `find` checkbox. We now should be able to make a `GET` request to `/api/global` and see our data.
 
-![023-permissions.png](https://api-prod.strapi.io/uploads/023_permissions_f0289964ca.png)
+![023-permissions.png](/images/03-epic-next/023-permissions.png)
 
 Since we have already learned about Strapi's **Populate**, we can jump straight into our frontend code and implement the function to fetch our **Global** data.
 
@@ -936,7 +937,11 @@ export default async function RootLayout({
   console.dir(globalData, { depth: null });
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
@@ -946,12 +951,22 @@ The complete code should look like the following.
 
 ```jsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-
 import { getGlobalData } from "@/data/loaders";
+
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
+});
+
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+  weight: "100 900",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -967,7 +982,11 @@ export default async function RootLayout({
   console.dir(globalData, { depth: null });
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
@@ -977,44 +996,49 @@ Nice. Now restart your Next.js application, and we should see the following outp
 
 ```js
 {
-  id: 1,
-  title: 'Global Page',
-  description: 'Setting for our header and footer',
-  createdAt: '2024-03-14T00:22:37.634Z',
-  updatedAt: '2024-03-14T00:25:34.628Z',
-  publishedAt: '2024-03-14T00:25:34.622Z',
-  header: {
-    id: 1,
-    ctaButton: { id: 3, url: '/login', text: 'Login', isExternal: false },
-    logoText: { id: 2, url: '/', text: 'Summarize AI', isExternal: false }
-  },
-  footer: {
-    id: 1,
-    text: 'Made by Paul with Love.',
-    socialLink: [
-      {
-        id: 5,
-        url: 'www.youtube.com',
-        text: 'YouTube',
-        isExternal: true
-      },
-      {
-        id: 6,
-        url: 'www.linkedin.com',
-        text: 'LinkedIn',
-        isExternal: true
-      },
-      {
-        id: 7,
-        url: 'www.twitter.com',
-        text: 'Twitter',
-        isExternal: true
-      }
-    ],
-    logoText: { id: 4, url: '/', text: 'Summarize AI', isExternal: false }
+  data: {
+    id: 2,
+    documentId: 'fyj7ijjnkxy75h1cbusrafj2',
+    title: 'Global Page',
+    description: 'Responsible for our header and footer.',
+    createdAt: '2024-10-02T18:44:37.585Z',
+    updatedAt: '2024-10-02T18:44:37.585Z',
+    publishedAt: '2024-10-02T18:44:37.594Z',
+    locale: null,
+    header: {
+      id: 2,
+      ctaButton: { id: 11, url: '/', text: 'Login', isExternal: false },
+      logoText: { id: 10, url: '/', text: 'Summarize AI', isExternal: false }
+    },
+    footer: {
+      id: 2,
+      text: 'Made with love by Paul',
+      socialLink: [
+        {
+          id: 13,
+          url: 'www.youtube.com',
+          text: 'YouTube',
+          isExternal: true
+        },
+        {
+          id: 14,
+          url: 'www.twitter.com',
+          text: 'Twitter',
+          isExternal: true
+        },
+        {
+          id: 15,
+          url: 'www.linkedin.com',
+          text: 'LinkedIn',
+          isExternal: true
+        }
+      ],
+      logoText: { id: 12, url: '/', text: 'Summarize AI', isExternal: false }
+    }
   },
   meta: {}
 }
+
 ```
 
 That is amazing.
@@ -1027,7 +1051,7 @@ Alright, let's build out our **Header** component for our top navigation.
 
 Just as a reminder, our logo has two items. A **logo** and **button** , so let's first create our `Logo` component.
 
-Navigate to `src/app/components/custom`, create a file called `Logo.tsx,` and add the following code.
+Navigate to `src/app/components/custom`, create a file called `logo.tsx,` and add the following code.
 
 ```jsx
 import Link from "next/link";
@@ -1077,7 +1101,7 @@ export function Logo({
 
 It is a simple component that expects `text` as a prop to display the name of our site and a `dark` prop to allow us to make the text white on dark backgrounds.
 
-Next, let's create our actual **Header** component. Navigate to `src/app/components/custom`, create a file called `Header.tsx,` and add the following code.
+Next, let's create our actual **Header** component. Navigate to `src/app/components/custom`, create a file called `header.tsx,` and add the following code.
 
 ```jsx
 import Link from "next/link";
@@ -1120,7 +1144,7 @@ So let's navigate to `src/app/layout.tsx` file and make the following updates.
 First, let's import our **Header** component.
 
 ```jsx
-import { Header } from "@/components/custom/Header";
+import { Header } from "@/components/custom/header";
 ```
 
 Next, make the following change in the `return` statement.
@@ -1129,7 +1153,8 @@ Next, make the following change in the `return` statement.
 return (
   <html lang="en">
     <body className={inter.className}>
-      <Header data={globalData.header} /> // add our header and pass in the data
+      <Header data={globalData.data.header} /> // add our header and pass in the
+      data
       <div>{children}</div>
     </body>
   </html>
@@ -1138,7 +1163,7 @@ return (
 
 Restart your project, and you should now see our awesome top navigation.
 
-![024-top-nav.png](https://api-prod.strapi.io/uploads/024_top_nav_2fe4d50689.png)
+![024-top-nav.png](/images/03-epic-next/024-top-nav.png)
 
 ### Building Our Footer In Next.js
 
@@ -1148,7 +1173,7 @@ Our footer will display the following items.
 
 ![020-footer.png](https://api-prod.strapi.io/uploads/020_footer_a56d630928.png)
 
-Navigate to `src/app/components/custom,` create a file called `Footer.tsx,` and add the following code.
+Navigate to `src/app/components/custom,` create a file called `footer.tsx,` and add the following code.
 
 ```jsx
 import Link from "next/link";
@@ -1189,7 +1214,11 @@ export function Footer({ data }: Readonly<FooterProps>) {
         <div className="flex items-center space-x-4">
           {socialLink.map((link) => {
             return (
-              <Link className="text-white hover:text-gray-300" href={link.url}>
+              <Link
+                className="text-white hover:text-gray-300"
+                href={link.url}
+                key={link.id}
+              >
                 {selectSocialIcon(link.url)}
                 <span className="sr-only">Visit us at {link.text}</span>
               </Link>
@@ -1271,17 +1300,22 @@ Here is what my response looks like with my social links.
 
 ```js
 [
-  { id: 5, url: "www.youtube.com", text: "YouTube", isExternal: true },
   {
-    id: 6,
-    url: "www.github.com",
-    text: "Github",
+    id: 25,
+    url: "www.youtube.com",
+    text: "YouTube",
     isExternal: true,
   },
   {
-    id: 7,
+    id: 26,
     url: "www.twitter.com",
     text: "Twitter",
+    isExternal: true,
+  },
+  {
+    id: 27,
+    url: "www.github.com",
+    text: "GitHub",
     isExternal: true,
   },
 ];
@@ -1292,7 +1326,7 @@ Now that we have completed our footer, let's add it to the layout.tsx file in th
 First, let's import our **Footer** component.
 
 ```jsx
-import { Footer } from "@/components/custom/Footer";
+import { Footer } from "@/components/custom/footer";
 ```
 
 Next, make the following change in the `return` statement.
@@ -1300,10 +1334,10 @@ Next, make the following change in the `return` statement.
 ```jsx
 return (
   <html lang="en">
-    <body className={inter.className}>
-      <Header data={globalData.header} />
-      <div>{children}</div>
-      <Footer data={globalData.footer} />
+    <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <Header data={globalData.data.header} />
+      {children}
+      <Footer data={globalData.data.footer} />
     </body>
   </html>
 );
@@ -1315,7 +1349,7 @@ Now, if you restart the Next.js application, you should see the following change
 
 Yay, we are now getting our data from our Strapi API.
 
-If you don't see the changes, it is because Next.js is caching our old data. When we refactored our app and moved our data loading function to our `loaders.ts` file, we did not implement the `{ cache: "no-store" }` flag as we did in the previous article.
+If you don't see the changes, it is because Next.js is caching our old data.
 
 ## Let's revisit Next.js Data Caching
 
@@ -1351,11 +1385,10 @@ There are two ways we can handle this in `development` while we are working with
 
 We can keep everything as is and use `command-shift-r` to reload the cache, which I was reminded of when chatting with Lee Robinson. I always forget about this. You can follow him on [Twitter](https://twitter.com/leeerob).
 
-Or we can opt out of caching. As I mentioned before, for static pages, in the future, we will have a hook that will be fired from our Strapi app and revalidate new content, but for now, I will show you another way you can opt out of caching.
+Or we can opt out of caching. Outside of the previous method discussed, we can use the `noStore` function; you can read more about it [here](https://nextjs.org/docs/app/api-reference/functions/unstable_noStore).
 
-Outside of the previous method discussed, we can use the `noStore` function; you can read more about it [here](https://nextjs.org/docs/app/api-reference/functions/unstable_noStore).
-
-So, let's navigate to our `src/data/loaders.ts` file and make the following changes.
+I will show the code for the `noStore` function, but in this tutorial, we will just use `command-shift-r` to refresh the cache.
+So, let's navigate to our `src/data/loaders.ts` file, you can make the following changes.
 
 First, let's import the `noStore` function.
 
@@ -1406,8 +1439,6 @@ This is due to using `noStore` please note Even though `noStore` is defined at t
 
 If we reorder our social links in our **Strapi Admin** panel now, our changes will reflect on our Next.js frontend.
 
-![027-no-store.gif](https://api-prod.strapi.io/uploads/027_no_store_0cf68a542d.gif)
-
 note: you don't need to use `noStore` I just wanted to show you that it exists, and you can continue to refresh the site with `command-shift-r`.
 
 In future posts we will take look how to use `revalidatePath` to revalidate our cache.
@@ -1416,7 +1447,7 @@ In future posts we will take look how to use `revalidatePath` to revalidate our 
 
 We have a `title` and `description` on our **Global** page in Strapi.
 
-![033-metadata.png](https://api-prod.strapi.io/uploads/033_metadata_6ab1344baa.png)
+![033-metadata.png](/images/03-epic-next/033-metadata.png)
 
 Let's use it as our `metadata` information in our app.
 
@@ -1456,12 +1487,12 @@ In the function above, we ask Strapi to return only the `title` and `description
 The response will look like the following.
 
 ```js
-{
-  id: 1,
+data: {
+  id: 4,
+  documentId: 'fyj7ijjnkxy75h1cbusrafj2',
   title: 'Global Page',
-  description: 'Setting for our header and footer',
-  meta: {}
-}
+  description: 'Responsible for our header and footer.'
+},
 
 ```
 
@@ -1472,19 +1503,19 @@ Let's update our current `metadata` function with the following.
 First, let's import the following.
 
 ```jsx
-import type { Metadata } from "next";
 import { getGlobalData, getGlobalPageMetadata } from "@/data/loaders";
 ```
 
-Then, add the following code.
+Now, replace the previous `export const metadata: Metadata` with the following code.
 
 ```jsx
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getGlobalPageMetadata();
+  const { title, description } = metadata?.data;
 
   return {
-    title: metadata?.title,
-    description: metadata.description,
+    title: title ?? "Epic Next Course",
+    description: description ?? "Epic Next Course",
   };
 }
 ```
@@ -1495,21 +1526,33 @@ The completed code should look like the following:
 
 ```jsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 import { getGlobalData, getGlobalPageMetadata } from "@/data/loaders";
 
-import { Header } from "@/components/custom/Header";
-import { Footer } from "@/components/custom/Footer";
+import { Header } from "@/components/custom/header";
+import { Footer } from "@/components/custom/footer";
+
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
+});
+
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+  weight: "100 900",
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getGlobalPageMetadata();
+  const { title, description } = metadata?.data;
+
   return {
-    title: metadata?.title,
-    description: metadata.description,
+    title: title ?? "Epic Next Course",
+    description: description ?? "Epic Next Course",
   };
 }
 
@@ -1519,13 +1562,15 @@ export default async function RootLayout({
   children: React.ReactNode,
 }>) {
   const globalData = await getGlobalData();
-
+  console.dir(globalData, { depth: null });
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Header data={globalData.header} />
-        <div>{children}</div>
-        <Footer data={globalData.footer} />
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <Header data={globalData.data.header} />
+        {children}
+        <Footer data={globalData.data.footer} />
       </body>
     </html>
   );

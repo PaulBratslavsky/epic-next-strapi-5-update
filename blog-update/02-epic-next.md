@@ -767,7 +767,7 @@ Out of the box, Next.js caches things by default.   For instance, if we go to ou
 There are many ways to solve this issue. And in Next 15 caching will not be done by default.
 
 
-But for now we can just do a hard refresh in your browser with "command + r".
+But for now we can just do a hard refresh in your browser with `command-shift-r`.
 
 You can read more about it on the Next.js [docs](https://nextjs.org/docs/app/building-your-application/data-fetching/fetching-caching-and-revalidating#opting-out-of-data-caching).
 

@@ -15,9 +15,6 @@ function blockRenderer(block: any) {
 
 export default async function Home() {
   const strapiData = await getHomePageData();
-
-  console.dir(strapiData, { depth: null });
-
   const { blocks } = strapiData?.data || [];
 
   return (
