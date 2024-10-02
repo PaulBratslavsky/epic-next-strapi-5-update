@@ -14,7 +14,9 @@ export interface ApiHomePageHomePage extends Struct.SingleTypeSchema {
   attributes: {
     title: Schema.Attribute.String;
     description: Schema.Attribute.Text;
-    blocks: Schema.Attribute.DynamicZone<['layout.hero-section']>;
+    blocks: Schema.Attribute.DynamicZone<
+      ['layout.hero-section', 'layout.features-section']
+    >;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;

@@ -1,5 +1,31 @@
 import type { Struct, Schema } from '@strapi/strapi';
 
+export interface ComponentsLink extends Struct.ComponentSchema {
+  collectionName: 'components_components_links';
+  info: {
+    displayName: 'Link';
+  };
+  attributes: {
+    url: Schema.Attribute.String;
+    text: Schema.Attribute.String;
+    isExternal: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+  };
+}
+
+export interface ComponentsFeature extends Struct.ComponentSchema {
+  collectionName: 'components_components_features';
+  info: {
+    displayName: 'Feature';
+  };
+  attributes: {
+    heading: Schema.Attribute.String;
+    subHeading: Schema.Attribute.Text;
+    icon: Schema.Attribute.Enumeration<
+      ['CLOCK_ICON', 'CHECK_ICON', 'CLOUD_ICON']
+    >;
+  };
+}
+
 export interface LayoutHeroSection extends Struct.ComponentSchema {
   collectionName: 'components_layout_hero_sections';
   info: {
@@ -14,23 +40,25 @@ export interface LayoutHeroSection extends Struct.ComponentSchema {
   };
 }
 
-export interface ComponentsLink extends Struct.ComponentSchema {
-  collectionName: 'components_components_links';
+export interface LayoutFeaturesSection extends Struct.ComponentSchema {
+  collectionName: 'components_layout_features_sections';
   info: {
-    displayName: 'Link';
+    displayName: 'Features Section';
   };
   attributes: {
-    url: Schema.Attribute.String;
-    text: Schema.Attribute.String;
-    isExternal: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    title: Schema.Attribute.String;
+    description: Schema.Attribute.Text;
+    feature: Schema.Attribute.Component<'components.feature', true>;
   };
 }
 
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
-      'layout.hero-section': LayoutHeroSection;
       'components.link': ComponentsLink;
+      'components.feature': ComponentsFeature;
+      'layout.hero-section': LayoutHeroSection;
+      'layout.features-section': LayoutFeaturesSection;
     }
   }
 }
