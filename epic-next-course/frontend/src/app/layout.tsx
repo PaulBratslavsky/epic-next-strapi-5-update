@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { getGlobalData, getGlobalPageMetadata } from "@/data/loaders";
 
+import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/custom/header";
 import { Footer } from "@/components/custom/footer";
 
@@ -29,7 +30,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -41,6 +41,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Toaster position="bottom-center" />
         <Header data={globalData.data.header} />
         {children}
         <Footer data={globalData.data.footer} />
