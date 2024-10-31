@@ -17,7 +17,12 @@ export async function mutateData(method: string, path: string, payload?: any) {
       },
       body: JSON.stringify({ ...payload }),
     });
-    const data = await response.json();
+
+    if (method === 'DELETE') {
+      return response.ok;
+    }
+
+    const data = await response?.json();
     return data;
   } catch (error) {
     console.log("error", error);

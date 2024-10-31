@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 import { createSummaryAction } from "@/data/actions/summary-actions";
 import { generateSummaryService } from "@/data/services/summary-service";
-import { extractYouTubeID } from "@/lib/utils";
+import { extractYouTubeID, cn } from "@/lib/utils";
 
 import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/custom/submit-button";
@@ -68,10 +67,17 @@ export function SummaryForm() {
       setValue("");
       setError(INITIAL_STATE);
     } catch (error) {
-      toast.error("Error Creating Summary");
+      let errorMessage = "An unexpected error occurred while creating the summary";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      toast.error(errorMessage);
       setError({
-        ...INITIAL_STATE,
-        message: "Error Creating Summary",
+        message: errorMessage,
         name: "Summary Error",
       });
       setLoading(false);

@@ -14,6 +14,9 @@ export default async function SummarySingleRoute({
   readonly children: React.ReactNode;
 }) {
   const data = await getSummaryById(params.videoId);
+  console.log("############ DATA ###############");
+  console.log("data", data);
+  console.log("#################################");
   if (data?.error?.status === 404) return <p>No Items Found</p>;
   const videoId = extractYouTubeID(data.data.videoId);
   return (
