@@ -2,7 +2,6 @@ import qs from "qs";
 import { getStrapiURL } from "@/lib/utils";
 import { getAuthToken } from "./services/get-token";
 
-
 const baseUrl = getStrapiURL();
 
 async function fetchData(url: string) {
@@ -22,12 +21,11 @@ async function fetchData(url: string) {
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
-    throw error; 
+    throw error;
   }
 }
 
 export async function getHomePageData() {
-  
   const url = new URL("/api/home-page", baseUrl);
 
   url.search = qs.stringify({
@@ -84,9 +82,25 @@ export async function getGlobalPageMetadata() {
   return await fetchData(url.href);
 }
 
-export async function getSummaries() {
+export async function getSummaries(queryString: string, currentPage: number) {
+  const PAGE_SIZE = 4;
+
+  const query = qs.stringify({
+    sort: ["createdAt:desc"],
+    filters: {
+      $or: [
+        { title: { $containsi: queryString } },
+        { summary: { $containsi: queryString } },
+      ],
+    },
+    pagination: {
+      pageSize: PAGE_SIZE,
+      page: currentPage,
+    },
+  });
   const url = new URL("/api/summaries", baseUrl);
-  return await fetchData(url.href);
+  url.search = query;
+  return fetchData(url.href);
 }
 
 export async function getSummaryById(summaryId: string) {
