@@ -7,3 +7,4 @@ npx create-strapi-app@latest my-project --quickstart
 ```
 
 
+# strapi-5-next-14-project-deploy
