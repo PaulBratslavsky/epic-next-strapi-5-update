@@ -50,7 +50,6 @@ export function SummaryForm() {
     toast.success("Generating Summary");
 
     const summaryResponseData = await generateSummaryService(processedVideoId);
-    console.log(summaryResponseData, "Response from route handler");
 
     const payload = {
       data: {

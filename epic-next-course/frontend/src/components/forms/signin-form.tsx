@@ -28,7 +28,6 @@ const INITIAL_STATE = {
 
 export function SigninForm() {
   const [formState, formAction] = useFormState(loginUserAction, INITIAL_STATE);
-  console.log(formState, "formState");
   return (
     <div className="w-full max-w-md">
       <form action={formAction}>

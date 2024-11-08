@@ -7,6 +7,10 @@ const nextConfig = {images: {
       port: "1337",
       pathname: "/uploads/**/*",
     },
+    {
+      protocol: "https",
+      hostname: "clever-dawn-ec1866942d.media.strapiapp.com",
+    },
   ],
 },};
 

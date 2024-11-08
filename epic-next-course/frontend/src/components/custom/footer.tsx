@@ -27,6 +27,7 @@ function selectSocialIcon(url: string) {
 }
 
 export function Footer({ data }: Readonly<FooterProps>) {
+  if (!data) return <div>No Footer Data</div>;
   const { logoText, socialLink, text } = data;
   return (
     <div className="dark bg-gray-900 text-white py-8">

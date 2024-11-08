@@ -18,6 +18,7 @@ async function fetchData(url: string) {
   try {
     const response = await fetch(url, authToken ? headers : {});
     const data = await response.json();
+
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
