@@ -11,8 +11,6 @@ In the previous tutorial, we finished our **Home Page**, so we will build out ou
 - [Part 9: Backend deployment to Strapi Cloud](https://strapi.io/blog/epic-next-js-14-tutorial-part-9-backend-deployment-to-strapi-cloud)
 - [Part 10: Frontend deployment to Vercel](https://strapi.io/blog/epic-next-js-14-tutorial-part-10-frontend-deployment-to-vercel)
 
-![018-signin.gif](https://api-prod.strapi.io/uploads/018_signin_14be7909e1.gif)
-
 Let's start by creating our routes.
 
 ## How To Group Routes In Next.js
@@ -49,7 +47,7 @@ Paste the following code in the `signin/page.tsx` file.
 
 ```jsx
 export default function SignInRoute() {
-  return <div>Sing In Route</div>;
+  return <div>Sign In Route</div>;
 }
 ```
 
@@ -57,7 +55,7 @@ Paste the following code in the `signup/page.tsx` file.
 
 ```jsx
 export default function SingUpRoute() {
-  return <div>Sing Up Route</div>;
+  return <div>Sign Up Route</div>;
 }
 ```
 
@@ -290,7 +288,9 @@ Update the form attribute with the following:
 {
   /*  rest of our code  */
 }
-<form action={registerUserAction}>{/*  rest of our code  */}</form>;
+<form action={registerUserAction}>
+{/*  rest of our code  */}
+</form>;
 {
   /*  rest of our code  */
 }
@@ -351,16 +351,16 @@ We can now get our data in our `server action`, but how do we return or validate
 
 Well, that is what we will do in our next section.
 
-## How To Get Form State With useFormState Hook
+## How To Get Form State With useActionState Hook
 
-We will use React's `useFormState` hook to return data from our `server action`. You can learn more [here](https://react.dev/reference/react-dom/hooks/useFormState).
+We will use React's `useActionState` hook to return data from our `server action`. You can learn more [here](https://react.dev/reference/react/useActionState).
 
 Let's first start in the `signup-form.tsx` file.
 
-We will first import our `useFormState` hook from `react-dom`.
+We will first import our `useActionState` hook from `react-dom`.
 
 ```jsx
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 ```
 
 Now, let's create a variable to store our initial state.
@@ -371,10 +371,10 @@ const INITIAL_STATE = {
 };
 ```
 
-Now let's use our `useFormState` hook.
+Now let's use our `useActionState` hook.
 
 ```jsx
-const [formState, formAction] = useFormState(registerUserAction, INITIAL_STATE);
+const [formState, formAction] = useActionState(registerUserAction, INITIAL_STATE);
 ```
 
 And update the `form` action attribute with the following.
@@ -389,7 +389,7 @@ The completed code should look like the following.
 "use client";
 
 import Link from "next/link";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 
 import { registerUserAction } from "@/data/actions/auth-actions";
 
@@ -410,15 +410,12 @@ const INITIAL_STATE = {
 };
 
 export function SignupForm() {
-  const [formState, formAction] = useFormState(
-    registerUserAction,
-    INITIAL_STATE
-  );
+  const [formState, formAction] = useActionState(registerUserAction, INITIAL_STATE);
 
   console.log("## will render on client ##");
   console.log(formState);
   console.log("###########################");
-
+  
   return (
     <div className="w-full max-w-md">
       <form action={formAction}>
@@ -473,6 +470,7 @@ export function SignupForm() {
     </div>
   );
 }
+
 ```
 
 Finally, we have to update our `registerUserAction` action in the `auth-actions.ts` file using the following code:
@@ -502,7 +500,7 @@ When you submit the form, you should see our data console logged in our frontend
 
 ![008-data-front-end.png](https://api-prod.strapi.io/uploads/008_data_front_end_12e3ad6ac4.png)
 
-This is great. We are able to pass data to our `server action` and return it via `useFormState`.
+This is great. We are able to pass data to our `server action` and return it via `useActionState`.
 
 Before we see how to submit our form and sign in via our Strapi backend, let's examine how to handle form validation with Zod.
 
@@ -613,7 +611,7 @@ The updated `signup-form.tsx` code should look like the following.
 "use client";
 
 import Link from "next/link";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { registerUserAction } from "@/data/actions/auth-actions";
 
 import {
@@ -627,6 +625,7 @@ import {
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+
 import { ZodErrors } from "@/components/custom/zod-errors";
 
 const INITIAL_STATE = {
@@ -634,11 +633,15 @@ const INITIAL_STATE = {
 };
 
 export function SignupForm() {
-  const [formState, formAction] = useFormState(
+  const [formState, formAction] = useActionState(
     registerUserAction,
     INITIAL_STATE
   );
+
+  console.log("## will render on client ##");
   console.log(formState);
+  console.log("###########################");
+
   return (
     <div className="w-full max-w-md">
       <form action={formAction}>
@@ -746,7 +749,6 @@ export async function registerUserService(userData: RegisterUserProps) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ ...userData }),
-      cache: "no-cache",
     });
 
     return response.json();
@@ -765,7 +767,6 @@ export async function loginUserService(userData: LoginUserProps) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ ...userData }),
-      cache: "no-cache",
     });
 
     return response.json();
@@ -892,7 +893,6 @@ export function StrapiErrors( { error }: { readonly error: StrapiErrorsProps }) 
   if (!error?.message) return null;
   return <div className="text-pink-500 text-md italic py-2">{error.message}</div>;
 }
-
 ```
 
 Now navigate back to our `signup-form.tsx` file, import our newly created component, and add it right after our' submit' button.
@@ -1023,41 +1023,15 @@ const config = {
 Finally, use the following code to set the cookie.
 
 ```ts
-cookies().set("jwt", responseData.jwt, config);
+  const cookieStore = await cookies();
+  cookieStore.set("jwt", responseData.jwt, config);
 ```
 
 Finally, let's add a redirect to our `dashboard`; first, we must create the page, so let's do that now.
 
-Inside the `app` folder, create the `dashboard` folder with a `page.tsx` file containing the following code.
+The final code should look like the following. Notice we are using the `redirect` function from Next.js to redirect the user to the `dashboard` page; you can learn more [here](https://nextjs.org/docs/app/building-your-application/routing/redirecting#redirect-function).
 
-```jsx
-export default function DashboardRoute() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <h1>Dashboard</h1>
-    </div>
-  );
-}
-```
-
-Now, inside of our `auth-actions.ts` file inside of our `registerUserAction` function, let's add our redirect; you can learn more [here](https://nextjs.org/docs/app/building-your-application/routing/redirecting#redirect-function).
-
-First, import the `redirect` function from Next.
-
-```ts
-import { redirect } from "next/navigation";
-```
-
-And add the following line right after where we set the cookie.
-
-```ts
-cookies().set("jwt", responseData.jwt, config);
-redirect("/dashboard");
-```
-
-The completed code in the `auth-actions.ts` file should look like the following.
-
-```ts
+``` ts
 "use server";
 import { z } from "zod";
 import { cookies } from "next/headers";
@@ -1086,8 +1060,6 @@ const schemaRegister = z.object({
 });
 
 export async function registerUserAction(prevState: any, formData: FormData) {
-  console.log("Hello From Register User Action");
-
   const validatedFields = schemaRegister.safeParse({
     username: formData.get("username"),
     password: formData.get("password"),
@@ -1123,8 +1095,22 @@ export async function registerUserAction(prevState: any, formData: FormData) {
     };
   }
 
-  cookies().set("jwt", responseData.jwt, config);
+  const cookieStore = await cookies();
+  cookieStore.set("jwt", responseData.jwt, config);
+
   redirect("/dashboard");
+}
+```
+
+Inside the `app` folder, create the `dashboard` folder with a `page.tsx` file containing the following code.
+
+```jsx
+export default function DashboardRoute() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <h1>Dashboard</h1>
+    </div>
+  );
 }
 ```
 
@@ -1202,7 +1188,8 @@ Create a file inside the `services` folder called `get-token.ts` and add the fol
 import { cookies } from "next/headers";
 
 export async function getAuthToken() {
-  const authToken = cookies().get("jwt")?.value;
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("jwt")?.value;
   return authToken;
 }
 ```
@@ -1228,7 +1215,6 @@ export async function getUserMeLoader() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${authToken}`,
       },
-      cache: "no-cache",
     });
     const data = await response.json();
     if (data.error) return { ok: false, data: null, error: data.error };
@@ -1315,7 +1301,9 @@ export async function registerUserAction(prevState: any, formData: FormData) {
     };
   }
 
-  cookies().set("jwt", responseData.jwt, config);
+  const cookieStore = await cookies();
+  cookieStore.set("jwt", responseData.jwt, config);
+  
   redirect("/dashboard");
 }
 
@@ -1372,13 +1360,17 @@ export async function loginUserAction(prevState: any, formData: FormData) {
     };
   }
 
-  cookies().set("jwt", responseData.jwt, config);
+  console.log(responseData, "responseData");
+
+  const cookieStore = await cookies();
+  cookieStore.set("jwt", responseData.jwt, config);
 
   redirect("/dashboard");
 }
 
 export async function logoutAction() {
-  cookies().set("jwt", "", { ...config, maxAge: 0 });
+  const cookieStore = await cookies();
+  cookieStore.set("jwt", "", { ...config, maxAge: 0 });
   redirect("/");
 }
 ```
@@ -1389,7 +1381,7 @@ Next, navigate to our `signin-form.tsx` file and paste the following code.
 "use client";
 
 import Link from "next/link";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { loginUserAction } from "@/data/actions/auth-actions";
 
 import {
@@ -1415,7 +1407,7 @@ const INITIAL_STATE = {
 };
 
 export function SigninForm() {
-  const [formState, formAction] = useFormState(loginUserAction, INITIAL_STATE);
+  const [formState, formAction] = useActionState(loginUserAction, INITIAL_STATE);
   return (
     <div className="w-full max-w-md">
       <form action={formAction}>
@@ -1509,13 +1501,74 @@ Only some things are in place, so let's test our **Sign In** page.
 
 Nice. Great job.
 
+### Preventing Common Security Vulnerabilities
+
+Protect your application from common threats by following these best practices:
+
+- **Use HTTP-only Cookies**: Store session tokens in HTTP-only cookies to prevent access from client-side scripts.
+- **Implement CSRF Protection**: Guard against Cross-Site Request Forgery attacks by using CSRF tokens for state-changing operations.
+- **Regularly Update Dependencies**: Keep your packages up-to-date to patch known vulnerabilities.
+- **Secure Environment Variables**: Store secrets like JWT keys in environment variables, not in your codebase.
+- **Handle Errors Safely**: Avoid exposing sensitive information in error messages. Log errors securely on the server.
+- **Limit Login Attempts**: Implement rate limiting on authentication endpoints to prevent brute-force attacks.
+
+To ensure your application adheres to industry standards, consider reviewing the [Strapi security best practices](https://strapi.io/blog/strapi-security-checklist), which include essential measures such as using the latest stable versions, adding HTTPS and SSL certificates, using strong passwords, taking regular backups, securing web hosts, modifying default settings, and installing security plugins.
+
+By implementing these security measures and following best practices, you'll improve the resilience of your Next.js application against potential threats.
+
+## Testing and Debugging Authentication
+
+Implementing authentication requires thorough testing to ensure your application is secure and functions correctly.
+
+### Writing Unit Tests for Authentication
+
+Writing unit tests for your authentication logic helps catch errors early. Using testing frameworks like Jest, you can create tests for your login and signup API routes. For example, you might test that:
+
+- Valid credentials allow successful login.
+- Invalid credentials return an error.
+- Tokens are properly generated and stored.
+
+By simulating API calls and checking responses, you can verify that your authentication system handles different scenarios as expected.
+
+### Debugging Common Issues
+
+When issues arise, common problems include misconfigured middleware, incorrect token handling, or server-side errors. To debug effectively:
+
+- **Check Middleware**: Ensure your authentication middleware correctly protects routes and redirects unauthenticated users.
+- **Verify Tokens**: Confirm that tokens are properly signed and verified with the correct secret keys.
+- **Inspect API Responses**: Use tools like Postman or browser developer tools to examine responses from your authentication endpoints.
+- **Review Server Logs**: Look for error messages that can indicate where the authentication process is failing.
+
+By systematically checking each part of your authentication flow, you can identify and fix issues to maintain a secure application.
+
+## Deploying Your Application
+
+Preparing your Next.js 14 application for deployment involves ensuring that your server settings are properly configured for security and performance.
+
+### Configuring Server Settings
+
+To secure your application in production, configure your server appropriately:
+
+- **Use HTTPS**: Implement HTTPS to encrypt data in transit, protecting sensitive information from being intercepted.
+- **Securely Store Secrets**: Store your JWT secret and other sensitive credentials securely using environment variables. Avoid hardcoding secrets into your codebase to prevent potential security breaches.
+- **Implement CSRF Protection**: Protect your application from Cross-Site Request Forgery (CSRF) attacks by implementing CSRF protection measures, especially for authentication endpoints.
+- **Regularly Update Dependencies**: Keep your application's dependencies up to date to patch security vulnerabilities and benefit from the latest features and improvements.
+
+By carefully configuring your server settings, you improve the security and reliability of your deployed application.
+
+## Improving Your Application with Strapi
+
+By securing your Next.js 14 application with strong authentication, you've improved your web app's security and user experience. For more performance and flexibility, consider integrating with Strapi's headless CMS solutions.
+
+Strapi offers headless CMS solutions that enhance performance and flexibility, catering to various business needs. These solutions integrate with any frontend framework and allow content to be published across multiple channels simultaneously, improving site performance, scalability, and providing a personalized experience.
+
 ## Conclusion
 
 In this Next.js tutorial, we successfully built the Sign In and Sign Up pages for a Next.js application.
 
 We implemented custom Sign In and Sign Up forms with error handling and integrated them with a backend using server actions.
 
-Using useFormState and Zod for form validation ensured data integrity and provided user feedback.
+Using useActionState and Zod for form validation ensured data integrity and provided user feedback.
 
 We also covered setting up httpOnly cookies for secure authentication and protecting routes through Next.js middleware, establishing a solid foundation for user authentication flows in Next.js applications.
 
@@ -1524,3 +1577,16 @@ Thank you for your time, and I hope you are enjoying these tutorials.
 If you have any questions, you can ask them in the comments or stop by Strapi's `open office` on Discord from 12:30 pm CST to 1:30 pm CST Monday through Friday.
 
 See you in the next post, where we will work on building our dashboard.
+
+### Note about this project
+
+This project has been updated to use Next.js 15 and Strapi 5.
+
+If you have any questions, feel free to stop by at our [Discord Community](https://discord.com/invite/strapi) for our daily "open office hours" from 12:30 PM CST to 1:30 PM CST.
+
+
+Feel free to make PRs to fix any issues you find in the project, or let me know if you have any questions.
+
+Happy coding!
+
+- Paul

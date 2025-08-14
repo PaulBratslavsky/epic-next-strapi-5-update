@@ -9,6 +9,7 @@ type TLink = {
   id: number;
   href: string;
   label: string;
+  isExternal?: boolean;
 };
 
 export interface IHeroSection {
@@ -69,6 +70,15 @@ export type TGlobal = {
   publishedAt: string;
   header: THeader;
   footer: TFooter;
+};
+
+export type TMetaData = {
+  documentId: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
 };
 
 export type TStrapiResponse<T = null> = {

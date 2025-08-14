@@ -1521,46 +1521,70 @@ Let's create a new function called `getGlobalPageMetadata,` which only returns t
 Let's navigate to `src/data/loaders.ts` and add the following code.
 
 ```jsx
-export async function getGlobalPageMetadata() {
-  const url = new URL("/api/global", baseUrl);
-
-  url.search = qs.stringify({
+async function getMetaData(): Promise<TStrapiResponse<TMetaData>> {
+  const query = qs.stringify({
     fields: ["title", "description"],
   });
 
-  return await fetchData(url.href);
+  const url = new URL("/api/global", baseUrl);
+  url.search = query;
+  return fetchData(url.href);
 }
+```
+
+Don'f forget to add the `TMetaData` type in the `src/types/index.ts` file and import it into the `loaders.ts` file. And add the new **getMetaData** function to our exports.
+
+```ts
+export type TMetaData = {
+  documentId: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+};
+```
+
+`srs/data/loaders.ts`
+
+```
+import type { TStrapiResponse, THomePage, TGlobal, TMetaData } from "@/types";
+// rest of code
+export const loaders = { getHomePageData, getGlobalData, getMetaData };
 ```
 
 In the function above, we ask Strapi to return only the `title` and `description,` which are the only data we need for our metadata.
 
 The response will look like the following.
 
-```js
-data: {
-  id: 4,
-  documentId: 'fyj7ijjnkxy75h1cbusrafj2',
-  title: 'Global Page',
-  description: 'Responsible for our header and footer.'
-},
-
+```ts
+ data: {
+    id: 3,
+    documentId: 'vcny1vttvfqm1hd8dd6390rp',
+    title: 'Epic Next Tutorial',
+    description: 'Learn Next.js 15 with Strapi 5.'
+  },
 ```
+
+Notice that I updated it in my Strapi Admin to reflect a more useful _title_ and _description_.
+
+![2025-08-14_14-36-41.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/2025_08_14_14_36_41_a74a24fff1.png)
 
 Let's implement dynamic metadata inside our `layout.tsx` file.
 
 Let's update our current `metadata` function with the following.
 
-First, let's import the following.
+We are already importing our loaders.
 
 ```jsx
-import { getGlobalData, getGlobalPageMetadata } from "@/data/loaders";
+import { loaders } from "@/data/loaders";
 ```
 
 Now, replace the previous `export const metadata: Metadata` with the following code.
 
 ```jsx
 export async function generateMetadata(): Promise<Metadata> {
-  const metadata = await getGlobalPageMetadata();
+  const metadata = await loaders.getMetaData();
 
   return {
     title: metadata?.data?.title ?? "Epic Next Course",
@@ -1575,27 +1599,25 @@ The completed code should look like the following:
 
 ```jsx
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-import { getGlobalData, getGlobalPageMetadata } from "@/data/loaders";
+import { loaders } from "@/data/loaders";
 
 import { Header } from "@/components/custom/header";
 import { Footer } from "@/components/custom/footer";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
+const geistSans = Geist({
   variable: "--font-geist-sans",
-  weight: "100 900",
+  subsets: ["latin"],
 });
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+
+const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  weight: "100 900",
+  subsets: ["latin"],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const metadata = await getGlobalPageMetadata();
+  const metadata = await loaders.getMetaData();
 
   return {
     title: metadata?.data?.title ?? "Epic Next Course",
@@ -1608,16 +1630,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode,
 }>) {
-  const globalData = await getGlobalData();
+  const globalData = await loaders.getGlobalData();
   console.dir(globalData, { depth: null });
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header data={globalData.data.header} />
+        <Header data={globalData?.data?.header} />
         {children}
-        <Footer data={globalData.data.footer} />
+        <Footer data={globalData?.data?.footer} />
       </body>
     </html>
   );
@@ -1770,6 +1792,8 @@ Finally, let's take a look at how we can handle errors in our application.
 
 Now, let's examine how to handle errors in Next.js to prevent our app from crashing completely.
 
+Based on Next.js Docs, you can declare globarl errors, and route based. [Read more here](https://nextjs.org/docs/app/getting-started/error-handling).
+
 Right now, if I go to the `src/data/loaders.ts` and add the following, I can throw an error inside the `getHomePageData` function.
 
 ```ts
@@ -1779,111 +1803,322 @@ throw new Error("Test error");
 The complete function will look like the following.
 
 ```ts
-export async function getHomePageData() {
+async function getGlobalData(): Promise<TStrapiResponse<TGlobal>> {
   throw new Error("Test error");
 
-  const url = new URL("/api/home-page", baseUrl);
-
-  url.search = qs.stringify({
-    populate: {
-      blocks: {
-        populate: {
-          image: {
-            fields: ["url", "alternativeText"],
-          },
-          link: {
-            populate: true,
-          },
-          feature: {
-            populate: true,
-          },
-        },
-      },
-    },
+  const query = qs.stringify({
+    populate: [
+      "header.logoText",
+      "header.ctaButton",
+      "footer.logoText",
+      "footer.socialLink",
+    ],
   });
 
-  return await fetchData(url.href);
+  const url = new URL("/api/global", baseUrl);
+  url.search = query;
+  return fetchData(url.href);
 }
 ```
 
 Our app will break with an ugly error.
 
-![031-error.png](https://api-prod.strapi.io/uploads/031_error_b13465b9bb.png)
+![next-error-ugly.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/next_error_ugly_a6c5299c35.png)
 
-We can fix this by creating an `error.ts` file to break our app gracefully. You can read more about Next.js errors [here](https://nextjs.org/docs/app/building-your-application/routing/error-handling)
+We can fix this by creating a `global-error.ts` file to break our app gracefully. You can read more about Next.js global errors [here](https://nextjs.org/docs/app/getting-started/error-handling#global-errors).
 
-Let's create a file called `error.tsx` inside our app folder and paste it into the following code.
+Let's create a file called `global-error.tsx` inside our app folder and paste it into the following code. I used [v0](https://v0.app/) to help me make it prety.
 
-```jsx
+```tsx
 "use client";
-import { useEffect } from "react";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, RefreshCw, AlertTriangle } from "lucide-react";
 
-export default function Error({
-  error,
-}: {
-  error: Error & { digest?: string },
-}) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
+const styles = {
+  container:
+    "min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4",
+  content: "max-w-2xl mx-auto text-center space-y-8",
+  textSection: "space-y-4",
+  headingError: "text-8xl font-bold text-red-600 select-none",
+  headingContainer: "relative",
+  pageTitle: "text-4xl font-bold text-gray-900 mb-4",
+  description: "text-lg text-gray-600 max-w-md mx-auto leading-relaxed",
+  illustrationContainer: "flex justify-center py-8",
+  illustration: "relative animate-pulse",
+  errorCircle:
+    "w-32 h-32 bg-red-100 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-red-200",
+  errorIcon: "w-16 h-16 text-red-500",
+  warningBadge:
+    "absolute -top-2 -right-2 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center animate-bounce",
+  warningSymbol: "text-orange-500 text-xl font-bold",
+  buttonContainer:
+    "flex flex-col sm:flex-row gap-4 justify-center items-center",
+  button: "min-w-[160px] bg-red-600 hover:bg-red-700 text-white",
+  buttonContent: "flex items-center gap-2",
+  buttonIcon: "w-4 h-4",
+  outlineButton: "min-w-[160px] border-red-600 text-red-600 hover:bg-red-50",
+  errorDetails:
+    "mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-left text-sm text-red-800",
+  errorTitle: "font-semibold mb-2",
+};
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <div className="space-y-4">
-        <BugIcon className="h-24 w-24 text-pink-500 dark:text-pink-400" />
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-          Oops! Something went wrong.
-        </h1>
-        <p className="text-lg text-gray-700 dark:text-gray-300">
-          This is an error page. Please try again later.
-        </p>
-        <p className="text-pink-800 italic">{error.message}</p>
-      </div>
-    </div>
-  );
+interface IGlobalError {
+  error: Error & { digest?: string };
+  reset: () => void;
 }
 
-function BugIcon({ className }: { className?: string }) {
+export default function GlobalError({ error, reset }: IGlobalError) {
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={cn(className)}
-    >
-      <path d="m8 2 1.88 1.88" />
-      <path d="M14.12 3.88 16 2" />
-      <path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1" />
-      <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" />
-      <path d="M12 20v-9" />
-      <path d="M6.53 9C4.6 8.8 3 7.1 3 5" />
-      <path d="M6 13H2" />
-      <path d="M3 21c0-2.1 1.7-3.9 3.8-4" />
-      <path d="M20.97 5c0 2.1-1.6 3.8-3.5 4" />
-      <path d="M22 13h-4" />
-      <path d="M17.2 17c2.1.1 3.8 1.9 3.8 4" />
-    </svg>
+    <html>
+      <body>
+        <div className={styles.container}>
+          <div className={styles.content}>
+            {/* Large Error Text */}
+            <div className={styles.textSection}>
+              <h1 className={styles.headingError}>Error</h1>
+              <div className={styles.headingContainer}>
+                <h2 className={styles.pageTitle}>Application Error</h2>
+                <p className={styles.description}>
+                  A critical error occurred that prevented the application from
+                  loading properly. Please try refreshing the page.
+                </p>
+              </div>
+            </div>
+
+            {/* Illustration */}
+            <div className={styles.illustrationContainer}>
+              <div className={styles.illustration}>
+                <div className={styles.errorCircle}>
+                  <AlertTriangle className={styles.errorIcon} />
+                </div>
+                <div className={styles.warningBadge}>
+                  <span className={styles.warningSymbol}>!</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className={styles.buttonContainer}>
+              <button
+                onClick={reset}
+                className={`${styles.button} px-6 py-3 rounded-lg font-medium transition-colors`}
+              >
+                <div className={styles.buttonContent}>
+                  <RefreshCw className={styles.buttonIcon} />
+                  Try Again
+                </div>
+              </button>
+
+              {!isHomePage && (
+                <Link
+                  href="/"
+                  className={`${styles.outlineButton} px-6 py-3 rounded-lg font-medium border-2 transition-colors inline-flex`}
+                >
+                  <div className={styles.buttonContent}>
+                    <Home className={styles.buttonIcon} />
+                    Go Home
+                  </div>
+                </Link>
+              )}
+            </div>
+
+            {process.env.NODE_ENV === "development" && (
+              <div className={styles.errorDetails}>
+                <div className={styles.errorTitle}>
+                  Error Details (Development Only):
+                </div>
+                <div>Message: {error.message}</div>
+                {error.digest && <div>Digest: {error.digest}</div>}
+                {error.stack && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer font-medium">
+                      Stack Trace
+                    </summary>
+                    <pre className="mt-2 text-xs overflow-auto">
+                      {error.stack}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </body>
+    </html>
   );
 }
 ```
 
 Now, when our app crashes, it does not look as scary.
 
-![032-pretty-error.png](https://api-prod.strapi.io/uploads/032_pretty_error_0451782ff0.png)
-Let's see if we can fix this.
+![pretty-error.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/pretty_error_6dcd6569f4.png)
+
+**note**: Global error UI must define its own <html> and <body> tags, since it is replacing the root layout or template when active.
+
+So if you would like to have a fallback UI, you would need to create it. I will add a fallback header using our **Header** component we created earlier as an example, but you can do the same for the footer.
+
+![global-error-with-fallback.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/global_error_with_fallback_164aef6785.png)
+
+```tsx
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, RefreshCw, AlertTriangle } from "lucide-react";
+import { Header } from "@/components/custom/header";
+
+const styles = {
+  container:
+    "min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4",
+  content: "max-w-2xl mx-auto text-center space-y-8",
+  textSection: "space-y-4",
+  headingError: "text-8xl font-bold text-red-600 select-none",
+  headingContainer: "relative",
+  pageTitle: "text-4xl font-bold text-gray-900 mb-4",
+  description: "text-lg text-gray-600 max-w-md mx-auto leading-relaxed",
+  illustrationContainer: "flex justify-center py-8",
+  illustration: "relative animate-pulse",
+  errorCircle:
+    "w-32 h-32 bg-red-100 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-red-200",
+  errorIcon: "w-16 h-16 text-red-500",
+  warningBadge:
+    "absolute -top-2 -right-2 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center animate-bounce",
+  warningSymbol: "text-orange-500 text-xl font-bold",
+  buttonContainer:
+    "flex flex-col sm:flex-row gap-4 justify-center items-center",
+  button: "min-w-[160px] bg-red-600 hover:bg-red-700 text-white",
+  buttonContent: "flex items-center gap-2",
+  buttonIcon: "w-4 h-4",
+  outlineButton: "min-w-[160px] border-red-600 text-red-600 hover:bg-red-50",
+  errorDetails:
+    "mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-left text-sm text-red-800",
+  errorTitle: "font-semibold mb-2",
+};
+
+interface IGlobalError {
+  error: Error & { digest?: string };
+  reset: () => void;
+}
+
+export default function GlobalError({ error, reset }: IGlobalError) {
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+
+  return (
+    <html>
+      <body>
+        <Header
+          data={{
+            logoText: {
+              id: 1,
+              href: "/",
+              label: "Summarize AI",
+            },
+            ctaButton: {
+              id: 1,
+              label: "Get Help",
+              href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+              isExternal: true,
+            },
+          }}
+        />
+        <div className={styles.container}>
+          <div className={styles.content}>
+            {/* Large Error Text */}
+            <div className={styles.textSection}>
+              <h1 className={styles.headingError}>Global Error</h1>
+              <div className={styles.headingContainer}>
+                <h2 className={styles.pageTitle}>Application Error</h2>
+                <p className={styles.description}>
+                  A critical error occurred that prevented the application from
+                  loading properly. Please try refreshing the page.
+                </p>
+              </div>
+            </div>
+
+            {/* Illustration */}
+            <div className={styles.illustrationContainer}>
+              <div className={styles.illustration}>
+                <div className={styles.errorCircle}>
+                  <AlertTriangle className={styles.errorIcon} />
+                </div>
+                <div className={styles.warningBadge}>
+                  <span className={styles.warningSymbol}>!</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className={styles.buttonContainer}>
+              <button
+                onClick={reset}
+                className={`${styles.button} px-6 py-3 rounded-lg font-medium transition-colors`}
+              >
+                <div className={styles.buttonContent}>
+                  <RefreshCw className={styles.buttonIcon} />
+                  Try Again
+                </div>
+              </button>
+
+              {!isHomePage && (
+                <Link
+                  href="/"
+                  className={`${styles.outlineButton} px-6 py-3 rounded-lg font-medium border-2 transition-colors inline-flex`}
+                >
+                  <div className={styles.buttonContent}>
+                    <Home className={styles.buttonIcon} />
+                    Go Home
+                  </div>
+                </Link>
+              )}
+            </div>
+
+            {process.env.NODE_ENV === "development" && (
+              <div className={styles.errorDetails}>
+                <div className={styles.errorTitle}>
+                  Error Details (Development Only):
+                </div>
+                <div>Message: {error.message}</div>
+                {error.digest && <div>Digest: {error.digest}</div>}
+                {error.stack && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer font-medium">
+                      Stack Trace
+                    </summary>
+                    <pre className="mt-2 text-xs overflow-auto">
+                      {error.stack}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </body>
+    </html>
+  );
+}
+```
+
+**note:** Also notice we are passing ` isExternal: true`, this is an optional param, and I forgot to add it in our **TLink** type, so let's update it in the `src/types/index.ts` file.
+
+```
+type TLink = {
+  id: number;
+  href: string;
+  label: string;
+  isExternal?: boolean;
+};
+```
 
 Excellent, we covered a lot in this post. Let's do a quick recap of what we covered.
 
 ## Conclusion
 
-In Part 3 of the Epic Next.js 14 Tutorial series, we focused on completing the home page design of a real-life project. The tutorial covered several key areas:
+In Part 3 of the Epic Next.js 15 Tutorial series, we focused on completing the home page design of a real-life project. The tutorial covered several key areas:
 
 **Refactoring the Hero Section**: we refactored the Hero Section to use the Next.js Image component for optimized image handling. This included creating a custom StrapiImage component for additional quality-of-life improvements.
 
@@ -1905,12 +2140,8 @@ This project has been updated to use Next.js 15 and Strapi 5.
 
 If you have any questions, feel free to stop by at our [Discord Community](https://discord.com/invite/strapi) for our daily "open office hours" from 12:30 PM CST to 1:30 PM CST.
 
-If you have a suggestion or find a mistake in the post, please open an issue on the [GitHub repository](https://github.com/PaulBratslavsky/epic-next-15-strapi-5).
-
-You can also find the blog post content in the [Strapi Blog](https://github.com/PaulBratslavsky/epic-next-15-strapi-5/tree/main/blog/blog-posts).
-
 Feel free to make PRs to fix any issues you find in the project, or let me know if you have any questions.
 
 Happy coding!
 
-- Paul
+Paul

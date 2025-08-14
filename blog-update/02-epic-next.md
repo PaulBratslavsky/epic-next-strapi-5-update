@@ -1,4 +1,4 @@
-This post is part 2 of many in our Epic Next.js Series.  You can find the outline for upcoming posts here.
+This post is part 2 of many in our Epic Next.js Series. You can find the outline for upcoming posts here.
 
 - [Part 1: Learn Next.js by building a website](https://strapi.io/blog/epic-next-js-14-tutorial-learn-next-js-by-building-a-real-life-project-part-1-2)
 - **Part 2: Building Out The Hero Section of the homepage**
@@ -6,7 +6,7 @@ This post is part 2 of many in our Epic Next.js Series.  You can find the outlin
 - [Part 4: How to handle login and Authentification in Next.js](https://strapi.io/blog/epic-next-js-14-tutorial-part-4-how-to-handle-login-and-authentication-in-next-js)
 - [Part 5: Building out the Dashboard page and upload file using NextJS server actions](https://strapi.io/blog/epic-next-js-14-tutorial-part-5-file-upload-using-server-actions)
 - [Part 6: Get Video Transcript with OpenAI Function](https://strapi.io/blog/epic-next-js-14-tutorial-part-6-create-video-summary-with-next-js-and-open-ai)
-- [Part 7: Strapi CRUD permissions](https://strapi.io/blog/epic-next-js-14-tutorial-part-7-next-js-and-strapi-crud-permissions) 
+- [Part 7: Strapi CRUD permissions](https://strapi.io/blog/epic-next-js-14-tutorial-part-7-next-js-and-strapi-crud-permissions)
 - [Part 8: Search & pagination in Nextjs](https://strapi.io/blog/epic-next-js-14-tutorial-part-8-search-and-pagination-in-next-js)
 - [Part 9: Backend deployment to Strapi Cloud](https://strapi.io/blog/epic-next-js-14-tutorial-part-9-backend-deployment-to-strapi-cloud)
 - [Part 10: Frontend deployment to Vercel](https://strapi.io/blog/epic-next-js-14-tutorial-part-10-frontend-deployment-to-vercel)
@@ -125,7 +125,7 @@ Remember, we can construct our query using the [Strapi Query Builder](https://do
 
 We can populate our data with the following query.
 
-``` js
+```js
 {
   populate: {
     blocks: {
@@ -159,38 +159,38 @@ Here is the [complete URL](http://localhost:1337/api/home-page?populate[blocks][
 
 We will get the following data after making a `GET` request in **Postman**.
 
-``` json
+```json
 {
-    "data": {
-        "id": 3,
-        "documentId": "upcn80a2a51ius5n36sbwlst",
-        "title": "Home Page",
-        "description": "This is our first single content type.",
-        "createdAt": "2025-08-11T17:58:48.636Z",
-        "updatedAt": "2025-08-12T17:38:05.251Z",
-        "publishedAt": "2025-08-12T17:38:05.260Z",
-        "blocks": [
-            {
-                "__component": "layout.hero-section",
-                "id": 2,
-                "heading": "Epic Next.js Tutorial!",
-                "subHeading": "It is awesome, just like you.",
-                "image": {
-                    "id": 2,
-                    "documentId": "bqs73cv7n0r7c08bsi2rdsww",
-                    "url": "/uploads/pexels_anna_nekrashevich_7552374_00d755b030.jpg",
-                    "alternativeText": null
-                },
-                "link": {
-                    "id": 2,
-                    "href": "/login",
-                    "label": "Login",
-                    "isExternal": null
-                }
-            }
-        ]
-    },
-    "meta": {}
+  "data": {
+    "id": 3,
+    "documentId": "upcn80a2a51ius5n36sbwlst",
+    "title": "Home Page",
+    "description": "This is our first single content type.",
+    "createdAt": "2025-08-11T17:58:48.636Z",
+    "updatedAt": "2025-08-12T17:38:05.251Z",
+    "publishedAt": "2025-08-12T17:38:05.260Z",
+    "blocks": [
+      {
+        "__component": "layout.hero-section",
+        "id": 2,
+        "heading": "Epic Next.js Tutorial!",
+        "subHeading": "It is awesome, just like you.",
+        "image": {
+          "id": 2,
+          "documentId": "bqs73cv7n0r7c08bsi2rdsww",
+          "url": "/uploads/pexels_anna_nekrashevich_7552374_00d755b030.jpg",
+          "alternativeText": null
+        },
+        "link": {
+          "id": 2,
+          "href": "/login",
+          "label": "Login",
+          "isExternal": null
+        }
+      }
+    ]
+  },
+  "meta": {}
 }
 ```
 
@@ -200,7 +200,7 @@ Now that we know our Strapi API works, let's move into the frontend of our proje
 
 Taking a look at our frontend code, this is what we have so far.
 
-``` js
+```js
 async function getStrapiData(url: string) {
   const baseUrl = "http://localhost:1337";
   try {
@@ -228,7 +228,7 @@ export default async function Home() {
 
 If we console log `strapiData,` we will notice that we are not yet getting all our fields.
 
-``` js
+```js
 {
     "data": {
         "id": 3,
@@ -247,7 +247,7 @@ That is because we need to tell Strapi what items we would like to populate. We 
 
 We will use the query that we defined previously.
 
-``` js
+```js
 {
   populate: {
     blocks: {
@@ -270,7 +270,7 @@ We will use the query that we defined previously.
 
 But to make this work, we must first install the `qs` package from NPM. You can learn more about it [here](https://www.npmjs.com/package/qs).
 
-It will allow us to generate our query string by passing our object from above. Later in the tutorial, we will look at how prepopulate our date vie route middleware.   
+It will allow us to generate our query string by passing our object from above. Later in the tutorial, we will look at how prepopulate our date vie route middleware.
 
 Let's run the following two commands in the front end of our project.
 
@@ -306,15 +306,15 @@ const homePageQuery = qs.stringify({
         "layout.hero-section": {
           populate: {
             image: {
-              fields: ["url", "alternativeText"]
+              fields: ["url", "alternativeText"],
             },
             link: {
-              populate: true
-            }
-          }
-        }
-      }
-    }
+              populate: true,
+            },
+          },
+        },
+      },
+    },
   },
 });
 ```
@@ -340,7 +340,6 @@ async function getStrapiData(path: string) {
     console.error(error);
   }
 }
-
 ```
 
 The final code will look as follows:
@@ -384,7 +383,7 @@ async function getStrapiData(path: string) {
 
 export default async function Home() {
   const strapiData = await getStrapiData("/api/home-page");
-  console.dir(strapiData.data, { depth: null })
+  console.dir(strapiData.data, { depth: null });
   const { title, description } = strapiData.data;
 
   return (
@@ -394,7 +393,6 @@ export default async function Home() {
     </main>
   );
 }
-
 ```
 
 When we look at our response in the terminal, we should see that Strapi has returned all of our requested data.
@@ -502,7 +500,6 @@ export default async function Home() {
     </main>
   );
 }
-
 ```
 
 We should see the following output when running our app. Notice we are able to see our **HeroSection** component.
@@ -517,10 +514,12 @@ import Link from "next/link";
 const styles = {
   header: "relative h-[600px] overflow-hidden",
   backgroundImage: "absolute inset-0 object-cover w-full h-full",
-  overlay: "relative z-10 flex flex-col items-center justify-center h-full text-center text-white bg-black/50",
+  overlay:
+    "relative z-10 flex flex-col items-center justify-center h-full text-center text-white bg-black/50",
   heading: "text-4xl font-bold md:text-5xl lg:text-6xl",
   subheading: "mt-4 text-lg md:text-xl lg:text-2xl",
-  button: "mt-8 inline-flex items-center justify-center px-6 py-3 text-base font-medium text-black bg-white rounded-md shadow hover:bg-gray-100 transition-colors"
+  button:
+    "mt-8 inline-flex items-center justify-center px-6 py-3 text-base font-medium text-black bg-white rounded-md shadow hover:bg-gray-100 transition-colors",
 };
 
 export function HeroSection({ data }: { data: any }) {
@@ -539,16 +538,11 @@ export function HeroSection({ data }: { data: any }) {
         width={1920}
       />
       <div className={styles.overlay}>
-        <h1 className={styles.heading}>
-          Summarize Your Videos
-        </h1>
+        <h1 className={styles.heading}>Summarize Your Videos</h1>
         <p className={styles.subheading}>
           Save time and get the key points from your videos
         </p>
-        <Link
-          className={styles.button}
-          href="/login"
-        >
+        <Link className={styles.button} href="/login">
           Login
         </Link>
       </div>
@@ -624,7 +618,6 @@ export default async function Home() {
     </main>
   );
 }
-
 ```
 
 ## Continue Working On Our Hero Section Component
@@ -655,7 +648,7 @@ First, create a new folder named `types` inside the `src` directory, and add an 
 
 Next, we’ll define the following interfaces inside that file.
 
-``` tsx
+```tsx
 type TImage = {
   id: number;
   documentId: string;
@@ -678,7 +671,6 @@ export interface IHeroSection {
   image: TImage;
   link: TLink;
 }
-
 ```
 
 And update our **HeroSection** component to use our types.
@@ -689,7 +681,6 @@ import { IHeroSection } from "@/types";
 export function HeroSection({ data }: { data: IHeroSection }) {
   // ...rest of the code
 }
-
 ```
 
 Finally, let's add our data from Strapi instead of hard coding it by making the following changes to our **HeroSection** component.
@@ -701,10 +692,12 @@ import { IHeroSection } from "@/types";
 const styles = {
   header: "relative h-[600px] overflow-hidden",
   backgroundImage: "absolute inset-0 object-cover w-full h-full",
-  overlay: "relative z-10 flex flex-col items-center justify-center h-full text-center text-white bg-black/50",
+  overlay:
+    "relative z-10 flex flex-col items-center justify-center h-full text-center text-white bg-black/50",
   heading: "text-4xl font-bold md:text-5xl lg:text-6xl",
   subheading: "mt-4 text-lg md:text-xl lg:text-2xl",
-  button: "mt-8 inline-flex items-center justify-center px-6 py-3 text-base font-medium text-black bg-white rounded-md shadow hover:bg-gray-100 transition-colors"
+  button:
+    "mt-8 inline-flex items-center justify-center px-6 py-3 text-base font-medium text-black bg-white rounded-md shadow hover:bg-gray-100 transition-colors",
 };
 
 export function HeroSection({ data }: { data: IHeroSection }) {
@@ -737,7 +730,7 @@ export function HeroSection({ data }: { data: IHeroSection }) {
 }
 ```
 
-We are now getting and displaying our data from Strapi but here are still more improvements that we must make in this component. I also updated the *heading** and **subHeading** text with in Strapi Admin to reflect the app that we are building.
+We are now getting and displaying our data from Strapi but here are still more improvements that we must make in this component. I also updated the \*heading** and **subHeading\*\* text with in Strapi Admin to reflect the app that we are building.
 
 **note:** we are still hard coding the image, and is something we will fix in the next sextion.
 
@@ -750,9 +743,9 @@ We will do this in the next post, where we will finish up our **Hero Section** c
 
 ## Conclusion
 
-We are making some great progress. In this post, we started working on displaying our **Hero Section** content.  
+We are making some great progress. In this post, we started working on displaying our **Hero Section** content.
 
-In the next post, we will create the **StrapiImage** component using the Next **Image** component to make rendering Strapi images easier. 
+In the next post, we will create the **StrapiImage** component using the Next **Image** component to make rendering Strapi images easier.
 
 Finish up our **Hero Section** and start working on our **Features Section**.
 

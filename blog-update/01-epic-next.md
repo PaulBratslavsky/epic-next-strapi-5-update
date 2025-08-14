@@ -13,7 +13,6 @@ This post is the first of many in our Epic Strapi Next.js 15 tutorial Series. Yo
 - [Part 9: Backend deployment to Strapi Cloud](https://strapi.io/blog/epic-next-js-14-tutorial-part-9-backend-deployment-to-strapi-cloud)
 - [Part 10: Frontend deployment to Vercel](https://strapi.io/blog/epic-next-js-14-tutorial-part-10-frontend-deployment-to-vercel)
 
-
 With the popularity of Next.js 15 and Strapi headless CMS and how they can empower you to build cool things, we are going to work on building a project together to cover all the awesome aspects of Next.js 15, the app folder, and all the new features including server components and server actions.
 
 In this post, we will quickly look at what we will build and the topics we will cover, set up the basic structure of our project, and make our first commitment.
@@ -215,7 +214,7 @@ Run the shadcn-ui init command:
 
 ```bash
   npx shadcn@latest init
-``` 
+```
 
 **Select the following options**
 
@@ -291,18 +290,18 @@ You will see the following prompt.
 ```bash
  Strapi   v5.21.0 🚀 Let's create your new project
 
- 
+
 🚀 Welcome to Strapi! Ready to bring your project to life?
- 
+
 Create a free account and get:
 ✨ 30 days of access to the Growth plan, which includes:
 ✅ Single Sign-On (SSO) login
 ✅ Content History
 ✅ Releases
 
-? Please log in or sign up. 
-  Login/Sign up 
-❯ Skip 
+? Please log in or sign up.
+  Login/Sign up
+❯ Skip
 
 ```
 
@@ -398,16 +397,16 @@ Awesome. We must get our initial **Home Page** data from our endpoint.
 
 ```json
 {
-    "data": {
-        "id": 2,
-        "documentId": "upcn80a2a51ius5n36sbwlst",
-        "title": "Home Page",
-        "description": "This is our first single content type.",
-        "createdAt": "2025-08-11T17:58:48.636Z",
-        "updatedAt": "2025-08-11T17:58:48.636Z",
-        "publishedAt": "2025-08-11T17:58:48.641Z"
-    },
-    "meta": {}
+  "data": {
+    "id": 2,
+    "documentId": "upcn80a2a51ius5n36sbwlst",
+    "title": "Home Page",
+    "description": "This is our first single content type.",
+    "createdAt": "2025-08-11T17:58:48.636Z",
+    "updatedAt": "2025-08-11T17:58:48.636Z",
+    "publishedAt": "2025-08-11T17:58:48.641Z"
+  },
+  "meta": {}
 }
 ```
 
@@ -484,8 +483,6 @@ I hope you had as much fun as I did, and I will see you in the next post.
 This project has been updated to use Next.js 15 and Strapi 5.
 
 If you have any questions, feel free to stop by at our [Discord Community](https://discord.com/invite/strapi) for our daily "open office hours" from 12:30 PM CST to 1:30 PM CST.
-
-If you have a suggestion or find a mistake in the post, please open an issue on the [GitHub repository](https://github.com/PaulBratslavsky/epic-next-15-strapi-5).
 
 Feel free to make PRs to fix any issues you find in the project or let me know if you have any questions.
 
