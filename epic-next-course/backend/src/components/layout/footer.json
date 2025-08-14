@@ -7,16 +7,17 @@
   "attributes": {
     "logoText": {
       "type": "component",
-      "repeatable": false,
-      "component": "components.link"
+      "component": "components.link",
+      "repeatable": false
     },
     "text": {
-      "type": "string"
+      "type": "text"
     },
     "socialLink": {
       "type": "component",
-      "repeatable": true,
-      "component": "components.link"
+      "component": "components.link",
+      "repeatable": true
     }
-  }
+  },
+  "config": {}
 }

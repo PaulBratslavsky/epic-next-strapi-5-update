@@ -1,6 +1,6 @@
 Hello, you wonderful people; in this post of many, I would like to introduce you to what we will be building.
 
-This post is the first of many in our Epic Strapi Next.js 14 tutorial Series. You can find the outline for upcoming post here.
+This post is the first of many in our Epic Strapi Next.js 15 tutorial Series. You can find the outline for upcoming post here.
 
 - **Part 1: Learn Next.js by building a website**
 - [Part 2: Building Out The Hero Section of the homepage](https://strapi.io/blog/epic-next-js-14-tutorial-part-2-building-out-the-home-page)
@@ -13,7 +13,8 @@ This post is the first of many in our Epic Strapi Next.js 14 tutorial Series. Yo
 - [Part 9: Backend deployment to Strapi Cloud](https://strapi.io/blog/epic-next-js-14-tutorial-part-9-backend-deployment-to-strapi-cloud)
 - [Part 10: Frontend deployment to Vercel](https://strapi.io/blog/epic-next-js-14-tutorial-part-10-frontend-deployment-to-vercel)
 
-With the popularity of Next.js 14 and Strapi headless CMS and how they can empower you to build cool things, we are going to work on building a project together to cover all the awesome aspects of Next.js 14, the app folder, and all the new features including server components and server actions.
+
+With the popularity of Next.js 15 and Strapi headless CMS and how they can empower you to build cool things, we are going to work on building a project together to cover all the awesome aspects of Next.js 15, the app folder, and all the new features including server components and server actions.
 
 In this post, we will quickly look at what we will build and the topics we will cover, set up the basic structure of our project, and make our first commitment.
 
@@ -65,7 +66,7 @@ The main benefits of using Strapi include its flexibility, as it allows develope
 
 It also supports many databases and can be easily integrated with popular front-end frameworks like React, Vue, and Angular.
 
-In our case, we will be using Next.js 14.
+In our case, we will be using Next.js 15.
 
 Strapi is designed to streamline the content management process, making it easier for developers and content creators to work efficiently.
 
@@ -75,7 +76,7 @@ In this tutorial, the goal is to cover the following Next.js and Strapi features
 
 ## Features
 
-**Next.js 14**
+**[Next.js 15](https://nextjs.org)**
 
 - New `/app` dir,
 - Routing, Layouts, Nested Layouts, and Layout Groups
@@ -86,12 +87,12 @@ In this tutorial, the goal is to cover the following Next.js and Strapi features
 - Server and Client Components
 - Protective Routes Middleware
 
-- UI Components built using **Shadcn UI**
-- Styled using **Tailwind CSS**
-- Validations using **Zod**
-- Written in **TypeScript**
+- UI Components built using **[Shadcn UI](https://ui.shadcn.com)**
+- Styled using **[Tailwind CSS 4](https://tailwindcss.com)**
+- Validations using **[Zod 4](https://zod.dev/v4)**
+- Written in **[TypeScript](https://www.typescriptlang.org)**
 
-**Strapi**
+**[Strapi](https://docs.strapi.io/cms/intro)**
 
 - Content Modeling
 - API Routes, Middlewares, and Policies **Strapi**
@@ -123,7 +124,7 @@ We will have a simple dashboard with a primary view showing available credits, n
 
 Here, you will enter your YouTube video url, and it will make a call to Open AI to generate our summary based on the YouTube video transcript.
 
-For this Next.js 14 tutorial, we will use the LangChain library to make a call to open AI since it gives us some additional features that we can use to extend our app in the future.
+For this Next.js 15 tutorial, we will use the LangChain library to make a call to open AI since it gives us some additional features that we can use to extend our app in the future.
 
 ![summary-demo.gif](https://api-prod.strapi.io/uploads/summary_demo_e3c4b06472.gif)
 
@@ -161,7 +162,7 @@ So let's get started.
 
 ## Setting Up Our Initial Project
 
-Let's start by setting up our front end first. For this, we will be using [Next.js 14](https://nextjs.org)
+Let's start by setting up our front end first. For this, we will be using [Next.js 15](https://nextjs.org)
 
 ### Setting Up Our Frontend
 
@@ -180,24 +181,24 @@ Once we created our folder, let's navigate inside of it by typing `cd epic-next-
 Select the following options:
 
 ```bash
-create-next-app@14.2.14
-Ok to proceed? (y) y
-✔ What is your project named? … frontend
-✔ Would you like to use TypeScript? … Yes
-✔ Would you like to use ESLint? … No
-✔ Would you like to use Tailwind CSS? … Yes
-✔ Would you like to use `src/` directory? … Yes
-✔ Would you like to use App Router? (recommended) … Yes
-✔ Would you like to customize the default import alias (@/*)? … Yes
-Creating a new Next.js app in /Users/paulbratslavsky/Desktop/work/epic-next-update/epic-next-course/frontend.
+paul@dev epic-next-course %   npx create-next-app@latest
 
+✔ What is your project named? … frontend
+✔ Would you like to use TypeScript? … No / Yes
+✔ Would you like to use ESLint? … No / Yes
+✔ Would you like to use Tailwind CSS? … No / Yes
+✔ Would you like your code inside a `src/` directory? … No / Yes
+✔ Would you like to use App Router? (recommended) … No / Yes
+✔ Would you like to use Turbopack for `next dev`? … No / Yes
+✔ Would you like to customize the import alias (`@/*` by default)? … No / Yes
+Creating a new Next.js app in /Users/paul/Desktop/Working/epic-next-course/frontend.
 ```
 
 Once your project has been created, let's navigate to our frontend folder with `cd frontend` and run `yarn dev` to start our frontend project.
 
 Your project will start at [http://localhost:3000](http://localhost:3000).
 
-![next-js-web.png](/images/01-epic-next/next-js-web.png)
+![next-js-web.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/next_js_web_e06505728d.png)
 
 ### Setting Up Shadcn UI for styling
 
@@ -214,39 +215,34 @@ Run the shadcn-ui init command:
 
 ```bash
   npx shadcn@latest init
-
-```
+``` 
 
 **Select the following options**
 
 ```bash
-frontend
-➜  epic-next-course  cd frontend
-➜  frontend git:(main) npx shadcn@latest init
+paul@dev frontend % npx shadcn@latest init
 
 ✔ Preflight checks.
 ✔ Verifying framework. Found Next.js.
-✔ Validating Tailwind CSS.
+✔ Validating Tailwind CSS config. Found v4.
 ✔ Validating import alias.
-✔ Which style would you like to use? › New York
 ✔ Which color would you like to use as the base color? › Neutral
-✔ Would you like to use CSS variables for theming? … no / yes
 ✔ Writing components.json.
 ✔ Checking registry.
-✔ Updating tailwind.config.ts
-✔ Updating src/app/globals.css
+✔ Updating CSS variables in src/app/globals.css
 ✔ Installing dependencies.
 ✔ Created 1 file:
   - src/lib/utils.ts
 
 Success! Project initialization completed.
+You may now add components.
 ```
 
 That's it. We now have Shadcn UI installed and ready to go.
 
 You will see the new `utils` folder and `components.json` file.
 
-![component-file.png](/images/01-epic-next/component-file.png)
+![component-file.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/component_file_f0e96d2043.png)
 
 Let's add our first component by running the following command in your `frontend` folder, which will install our button component.
 
@@ -293,23 +289,21 @@ You can learn more in the [docs](https://docs.strapi.io/dev-docs/quick-start), b
 You will see the following prompt.
 
 ```bash
- Strapi   v5.0.1 🚀 Let's create your new project
+ Strapi   v5.21.0 🚀 Let's create your new project
 
+ 
+🚀 Welcome to Strapi! Ready to bring your project to life?
+ 
+Create a free account and get:
+✨ 30 days of access to the Growth plan, which includes:
+✅ Single Sign-On (SSO) login
+✅ Content History
+✅ Releases
 
-We can't find any auth credentials in your Strapi config.
+? Please log in or sign up. 
+  Login/Sign up 
+❯ Skip 
 
-Create a free account on Strapi Cloud and benefit from:
-
-- ✦ Blazing-fast ✦ deployment for your projects
-- ✦ Exclusive ✦ access to resources to make your project successful
-- An ✦ Awesome ✦ community and full enjoyment of Strapi's ecosystem
-
-Start your 14-day free trial now!
-
-
-? Please log in or sign up.
-  Login/Sign up
-❯ Skip
 ```
 
 We will select `skip` and hit enter.
@@ -323,16 +317,16 @@ You will be prompted with the following options.
 ? Install dependencies with npm? Yes
 ? Initialize a git repository? No
 
- Strapi   Creating a new application at /Users/paulbratslavsky/Desktop/work/epic-next-update/epic-next-course/backend
+ Strapi   Creating a new application at /Users/paul/Desktop/Working/epic-next-course/backend
 
- deps   Installing dependencies with npm
+   deps   Installing dependencies with npm
 ```
 
 To start our Strapi application, we will run the following command.
 
 ```bash
   cd backend
-  yarn strapi develop
+  yarn strapi dev
 ```
 
 Once everything gets installed, you will be greeted by Strapi's register page.
@@ -341,7 +335,7 @@ Once everything gets installed, you will be greeted by Strapi's register page.
 
 Go ahead and create your first **admin user**. Once done, you will be greeted by the dashboard.
 
-![strapi-dashboard.png](/images/01-epic-next/strapi-dashboard.png)
+![Screenshot 2025-08-11 at 11.50.11 AM.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/Screenshot_2025_08_11_at_11_50_11_AM_c12d4d46c2.png)
 
 Congratulations. We now have our Strapi app set up.
 
@@ -363,18 +357,16 @@ Let's start by navigating to `Content-Type Builder` under `SINGLE TYPES` and cli
 
 We are going to name it `Home Page`.
 
-![single-type.gif](/images/01-epic-next/single-type.gif)
+![create-first-singletype.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/create_first_singletype_53a3b987bd.gif)
 
-We will add to text fields.
-
-Text -> Short Text -> Title
-Text -> Long Text -> Description
+Text -> Short Text -> title
+Text -> Long Text -> description
 
 Once done, click save.
 
 Now, let's add some basic data.
 
-![adding-data.gif](/images/01-epic-next/adding-data.gif)
+![adding-content-to-single-type.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/adding_content_to_single_type_8ca6dc14ba.gif)
 
 After adding the title text and description, make sure to click publish.
 
@@ -390,7 +382,7 @@ But first, we must give Strapi permission to serve those endpoints to our client
 
 Since this is public data, we can accomplish this with the following permissions.
 
-![giving-public-access.gif](/images/01-epic-next/giving-public-access.gif)
+![giving-public-access.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/giving_public_access_3a430b89d8.gif)
 
 Navigate to Settings -> USERS & PERMISSION PLUGIN -> Roles -> Public
 
@@ -400,29 +392,28 @@ We should now be able to access our data by making a `GET` request to `http://lo
 
 Let's give it a try.
 
-![home-page-data.png](/images/01-epic-next/home-page-data.png)
+![2025-08-11_13-56-17.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/2025_08_11_13_56_17_563b775185.png)
 
 Awesome. We must get our initial **Home Page** data from our endpoint.
 
 ```json
 {
-  "data": {
-    "id": 2,
-    "documentId": "fcnlk9xwoqmogfxvfim713y4",
-    "title": "Home Page",
-    "description": "This is our first single type",
-    "createdAt": "2024-10-01T18:33:35.081Z",
-    "updatedAt": "2024-10-01T18:33:35.081Z",
-    "publishedAt": "2024-10-01T18:33:35.090Z",
-    "locale": null
-  },
-  "meta": {}
+    "data": {
+        "id": 2,
+        "documentId": "upcn80a2a51ius5n36sbwlst",
+        "title": "Home Page",
+        "description": "This is our first single content type.",
+        "createdAt": "2025-08-11T17:58:48.636Z",
+        "updatedAt": "2025-08-11T17:58:48.636Z",
+        "publishedAt": "2025-08-11T17:58:48.641Z"
+    },
+    "meta": {}
 }
 ```
 
-With introduction of Strapi 5, we now have a cleaner API response with a new key called `documentId`. Which is a unique identifier for content.  
+With introduction of Strapi 5, we now have a cleaner API response with a new key called `documentId`. Which is a unique identifier for content.
 
-Even though we return an `id` in the response, we should use the `documentId` for all our requests. 
+Even though we return an `id` in the response, we should use the `documentId` for all our requests.
 
 You can learn more about the changes [here](https://docs.strapi.io/dev-docs/migration/v4-to-v5/breaking-changes/use-document-id).
 
@@ -432,7 +423,7 @@ Before we go, let's call from our front end and see if we can render our initial
 
 Let's see our Next.js and Strapi integration by creating create a basic function to fetch our data inside our Next.js application.
 
-Since we are using Next.js 14, we can use RSC [React Server Components].
+Since we are using Next.js 15, we can use RSC [React Server Components].
 
 Inside our **frontend project**, let's navigate to the `src/app/page.tsx` file.
 
@@ -478,7 +469,7 @@ We will continue building the home page, navigation, and footer in the next post
 
 ## Conclusion
 
-Amazing job, everyone. We did it, we now have our Next.js and Strapi integration. We have jump-started our Next.js 14 and Strapi journey.
+Amazing job, everyone. We did it, we now have our Next.js and Strapi integration. We have jump-started our Next.js 15 and Strapi journey.
 
 We set up both our frontend and backend of our video summarization app. We are now ready to continue building the rest of the project.
 
@@ -488,4 +479,16 @@ I want to build this out in public, so feel free to add comments and questions i
 
 I hope you had as much fun as I did, and I will see you in the next post.
 
-You can find the project repo [here](https://github.com/PaulBratslavsky/epic-next-strapi-5-update/tree/01-epic-next)
+### Note about this project
+
+This project has been updated to use Next.js 15 and Strapi 5.
+
+If you have any questions, feel free to stop by at our [Discord Community](https://discord.com/invite/strapi) for our daily "open office hours" from 12:30 PM CST to 1:30 PM CST.
+
+If you have a suggestion or find a mistake in the post, please open an issue on the [GitHub repository](https://github.com/PaulBratslavsky/epic-next-15-strapi-5).
+
+Feel free to make PRs to fix any issues you find in the project or let me know if you have any questions.
+
+Happy coding!
+
+Paul

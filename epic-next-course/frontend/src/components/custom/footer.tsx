@@ -1,49 +1,42 @@
 import Link from "next/link";
+import type { TFooter } from "@/types";
 import { Logo } from "@/components/custom/logo";
 
-interface SocialLink {
-  id: number;
-  text: string;
-  url: string;
-}
-
-interface FooterProps {
-  data: {
-    logoText: {
-      id: number;
-      text: string;
-      url: string;
-    };
-    text: string;
-    socialLink: SocialLink[];
-  };
-}
+const styles = {
+  footer: "dark bg-gray-900 text-white py-8",
+  container: "container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between",
+  text: "mt-4 md:mt-0 text-sm text-gray-300",
+  socialContainer: "flex items-center space-x-4",
+  socialLink: "text-white hover:text-gray-300",
+  icon: "h-6 w-6",
+  srOnly: "sr-only"
+};
 
 function selectSocialIcon(url: string) {
-  if (url.includes("youtube")) return <YoutubeIcon className="h-6 w-6" />;
-  if (url.includes("twitter")) return <TwitterIcon className="h-6 w-6" />;
-  if (url.includes("github")) return <GithubIcon className="h-6 w-6" />;
+  if (url.includes("youtube")) return <YoutubeIcon className={styles.icon} />;
+  if (url.includes("twitter")) return <TwitterIcon className={styles.icon} />;
+  if (url.includes("github")) return <GithubIcon className={styles.icon} />;
   return null;
 }
 
-export function Footer({ data }: Readonly<FooterProps>) {
-  if (!data) return <div>No Footer Data</div>;
+export function Footer({ data }: { data: TFooter | undefined }) {
+  if (!data) return null;
   const { logoText, socialLink, text } = data;
   return (
-    <div className="dark bg-gray-900 text-white py-8">
-      <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
-        <Logo dark text={logoText.text} />
-        <p className="mt-4 md:mt-0 text-sm text-gray-300">{text}</p>
-        <div className="flex items-center space-x-4">
+    <div className={styles.footer}>
+      <div className={styles.container}>
+        <Logo dark text={logoText.label} />
+        <p className={styles.text}>{text}</p>
+        <div className={styles.socialContainer}>
           {socialLink.map((link) => {
             return (
               <Link
-                className="text-white hover:text-gray-300"
-                href={link.url}
+                className={styles.socialLink}
+                href={link.href}
                 key={link.id}
               >
-                {selectSocialIcon(link.url)}
-                <span className="sr-only">Visit us at {link.text}</span>
+                {selectSocialIcon(link.href)}
+                <span className={styles.srOnly}>Visit us at {link.label}</span>
               </Link>
             );
           })}
@@ -53,7 +46,7 @@ export function Footer({ data }: Readonly<FooterProps>) {
   );
 }
 
-function GithubIcon(props: any) {
+function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -73,7 +66,7 @@ function GithubIcon(props: any) {
   );
 }
 
-function TwitterIcon(props: any) {
+function TwitterIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -92,7 +85,7 @@ function TwitterIcon(props: any) {
   );
 }
 
-function YoutubeIcon(props: any) {
+function YoutubeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

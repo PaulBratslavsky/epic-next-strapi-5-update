@@ -12,10 +12,10 @@
       "type": "text"
     },
     "feature": {
-      "displayName": "Feature",
       "type": "component",
-      "repeatable": true,
-      "component": "components.feature"
+      "component": "components.feature",
+      "repeatable": true
     }
-  }
+  },
+  "config": {}
 }

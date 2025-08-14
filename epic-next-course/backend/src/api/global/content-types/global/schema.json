@@ -4,8 +4,7 @@
   "info": {
     "singularName": "global",
     "pluralName": "globals",
-    "displayName": "Global",
-    "description": ""
+    "displayName": "Global"
   },
   "options": {
     "draftAndPublish": true
@@ -20,14 +19,13 @@
     },
     "header": {
       "type": "component",
-      "repeatable": false,
-      "component": "layout.header"
+      "component": "layout.header",
+      "repeatable": false
     },
     "footer": {
-      "displayName": "Footer",
       "type": "component",
-      "repeatable": false,
-      "component": "layout.footer"
+      "component": "layout.footer",
+      "repeatable": false
     }
   }
 }

@@ -1,20 +1,20 @@
 {
   "collectionName": "components_layout_headers",
   "info": {
-    "displayName": "Header",
-    "description": ""
+    "displayName": "Header"
   },
   "options": {},
   "attributes": {
     "logoText": {
       "type": "component",
-      "repeatable": false,
-      "component": "components.link"
+      "component": "components.link",
+      "repeatable": false
     },
     "ctaButton": {
       "type": "component",
-      "repeatable": false,
-      "component": "components.link"
+      "component": "components.link",
+      "repeatable": false
     }
-  }
+  },
+  "config": {}
 }

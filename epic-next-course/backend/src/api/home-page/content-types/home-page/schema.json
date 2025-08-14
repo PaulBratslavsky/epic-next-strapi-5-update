@@ -4,8 +4,7 @@
   "info": {
     "singularName": "home-page",
     "pluralName": "home-pages",
-    "displayName": "Home Page",
-    "description": ""
+    "displayName": "Home Page"
   },
   "options": {
     "draftAndPublish": true
@@ -16,7 +15,7 @@
       "type": "string"
     },
     "description": {
-      "type": "text"
+      "type": "string"
     },
     "blocks": {
       "type": "dynamiczone",

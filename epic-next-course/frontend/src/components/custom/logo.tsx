@@ -1,6 +1,16 @@
 import Link from "next/link";
 
-function MountainIcon(props: any) {
+const styles = {
+  link: "flex items-center gap-2",
+  icon: "h-6 w-6 text-pink-500",
+  text: {
+    base: "text-lg font-semibold",
+    light: "text-slate-900",
+    dark: "text-white",
+  },
+};
+
+function MountainIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -19,23 +29,19 @@ function MountainIcon(props: any) {
   );
 }
 
-interface LogoProps {
-  text?: string;
+interface ILogo {
+  text: string;
   dark?: boolean;
 }
 
 export function Logo({
-  text = "Logo Text",
+  text,
   dark = false,
-}: Readonly<LogoProps>) {
+}: Readonly<ILogo>) {
   return (
-    <Link className="flex items-center gap-2" href="/">
-      <MountainIcon className={"h-6 w-6  text-pink-500"} />
-      <span
-        className={`text-lg font-semibold ${
-          dark ? "text-white" : "text-slate-900"
-        }`}
-      >
+    <Link className={styles.link} href="/">
+      <MountainIcon className={styles.icon} />
+      <span className={`${styles.text.base} ${dark ? styles.text.dark : styles.text.light}`}>
         {text}
       </span>
     </Link>

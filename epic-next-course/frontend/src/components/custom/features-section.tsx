@@ -1,3 +1,6 @@
+import React from "react";
+import { IFeatureSection } from "@/types";
+
 function getIcon(name: string) {
   switch (name) {
     case "CLOCK_ICON":
@@ -11,42 +14,29 @@ function getIcon(name: string) {
   }
 }
 
-interface FeatureProps {
-  id: number;
-  heading: string;
-  subHeading: string;
-  icon: string;
-}
+const styles = {
+  container: "flex-1",
+  section: "container px-4 py-6 mx-auto md:px-6 lg:py-24",
+  grid: "grid gap-8 md:grid-cols-3",
+  featureCard: "flex flex-col items-center text-center",
+  icon: "w-12 h-12 mb-4 text-gray-900",
+  heading: "mb-4 text-2xl font-bold",
+  description: "text-gray-500",
+};
 
-interface FeatureSectionProps {
-  id: number;
-  __component: string;
-  title: string;
-  description: string;
-  feature: FeatureProps[];
-}
-
-export function FeatureSection({
-  data,
-}: {
-  readonly data: FeatureSectionProps;
-}) {
+export function FeaturesSection({ data }: { data: IFeatureSection }) {
+  if (!data) return null;
   const { feature } = data;
   return (
-    <div className="">
-      <div className="flex-1">
-        <section className="container px-4 py-6 mx-auto md:px-6 lg:py-24">
-          <div className="grid gap-8 md:grid-cols-3">
-            {feature.map((feature) => (
-              <div
-                key={feature.id}
-                className="flex flex-col items-center text-center"
-              >
-                {getIcon(feature.icon)}
-                <h2 className="mb-4 text-2xl font-bold">{feature.heading}</h2>
-                <p className="text-gray-500">
-                  {feature.subHeading}
-                </p>
+    <div>
+      <div className={styles.container}>
+        <section className={styles.section}>
+          <div className={styles.grid}>
+            {feature.map((item) => (
+              <div className={styles.featureCard} key={item.id}>
+                {getIcon(item.icon)}
+                <h2 className={styles.heading}>{item.heading}</h2>
+                <p className={styles.description}>{item.subHeading}</p>
               </div>
             ))}
           </div>
@@ -56,7 +46,7 @@ export function FeatureSection({
   );
 }
 
-function CheckIcon(props: any) {
+function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -75,7 +65,7 @@ function CheckIcon(props: any) {
   );
 }
 
-function ClockIcon(props: any) {
+function ClockIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -95,7 +85,7 @@ function ClockIcon(props: any) {
   );
 }
 
-function CloudIcon(props: any) {
+function CloudIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

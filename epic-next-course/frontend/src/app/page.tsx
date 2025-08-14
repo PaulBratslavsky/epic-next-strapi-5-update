@@ -1,26 +1,28 @@
-import { getHomePageData } from "@/data/loaders";
+import { loaders } from "@/data/loaders";
 
 import { HeroSection } from "@/components/custom/hero-section";
-import { FeatureSection } from "@/components/custom/features-section";
-
-const blockComponents = {
-  "layout.hero-section": HeroSection,
-  "layout.features-section": FeatureSection,
-};
-
-function blockRenderer(block: any) {
-  const Component = blockComponents[block.__component as keyof typeof blockComponents];
-  return Component ? <Component key={block.id} data={block} /> : null;
-}
+import { FeaturesSection } from "@/components/custom/features-section";
+import type { IHeroSection, IFeatureSection, TBlocks } from "@/types";
+import { notFound } from "next/navigation";
 
 export default async function Home() {
-  const strapiData = await getHomePageData();
+  const homePageData = await loaders.getHomePageData();
+  if (!homePageData?.data) notFound();
 
-  const { blocks } = strapiData?.data || [];
+  const { blocks } = homePageData.data;
+
+  function blockRenderer(block: TBlocks, index: number) {
+    switch (block.__component) {
+      case "layout.hero-section":
+        return <HeroSection key={index} data={block as IHeroSection} />;
+      case "layout.features-section":
+        return <FeaturesSection key={index} data={block as IFeatureSection} />;
+      default:
+        return null;
+    }
+  }
 
   return (
-    <main>
-      {blocks.map(blockRenderer)}
-    </main>
+    <main>{blocks.map((block, index) => blockRenderer(block, index))}</main>
   );
 }

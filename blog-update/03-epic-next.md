@@ -15,61 +15,49 @@ Let's refactor our **Hero Section** to use the **Next Image** component.
 
 Instead of using it directly, we will create a new component called **StrapiImage** to add a few additional quality live improvements.
 
-Inside `src/app/components`, create a new file called `strapi-image.tsx` and paste it into the following code.
+Inside `src/app/components/custom`, create a new file called `strapi-image.tsx` and paste it into the following code.
 
 ```tsx
 import Image from "next/image";
-import { getStrapiMedia } from "@/lib/utils";
 
-interface StrapiImageProps {
+import { getStrapiURL } from "@/lib/utils";
+
+interface IStrapiImage {
   src: string;
-  alt: string;
-  height: number;
-  width: number;
+  alt: string | null;
+  height?: number;
+  width?: number;
   className?: string;
+  fill?: boolean;
+  priority?: boolean;
+}
+
+export function getStrapiMedia(url: string | null) {
+  const strapiURL = getStrapiURL();
+  if (url == null) return null;
+  if (url.startsWith("data:")) return url;
+  if (url.startsWith("http") || url.startsWith("//")) return url;
+  return `${strapiURL}${url}`;
 }
 
 export function StrapiImage({
   src,
   alt,
-  height,
-  width,
   className,
-}: Readonly<StrapiImageProps>) {
+  ...rest
+}: Readonly<IStrapiImage>) {
   const imageUrl = getStrapiMedia(src);
   if (!imageUrl) return null;
-
   return (
     <Image
       src={imageUrl}
-      alt={alt}
-      height={height}
-      width={width}
+      alt={alt ?? "No alternative text provided"}
       className={className}
+      {...rest}
     />
   );
 }
 ```
-
-You will notice that we have a helper function called `getStrapiMedia`; first, let's add it to our `src/lib/utils.ts` file and then review what it does.
-
-```ts
-export function getStrapiURL() {
-  return process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
-}
-
-export function getStrapiMedia(url: string | null) {
-  if (url == null) return null;
-  if (url.startsWith("data:")) return url;
-  if (url.startsWith("http") || url.startsWith("//")) return url;
-  return `${getStrapiURL()}${url}`;
-}
-```
-
-**getStrapiURL()**:
-This function returns the URL of the Strapi API. We are setting our environment name to `NEXT_PUBLIC_`, which will be available in both the server and client components.
-
-**Note:** only set public for none private items when using `NEXT_PUBLIC_`, they will be seen by all. You can learn more in Next.js [docs](https://nextjs.org/docs/app/building-your-application/configuring/environment-variables#bundling-environment-variables-for-the-browser).
 
 **getStrapiMedia()**:
 This function is designed to process media URLs from the Strapi CMS. It accepts a URL as a string or null.
@@ -84,7 +72,18 @@ If the input URL starts with "http" or "//", it is also returned as-is. This cov
 
 If none of the above conditions are met, the function assumes the url is a relative path to a resource on the Strapi backend.
 
-In essence, these functions help manage and resolve media URLs in a Next.js application that uses Strapi as a headless CMS, ensuring that the application can handle local and external media resources effectively.
+We ara also importing the following helper function called `getStrapiURL`; first, let's add it to our `src/lib/utils.ts` file and then review what it does.
+
+```ts
+export function getStrapiURL() {
+  return process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
+}
+```
+
+**getStrapiURL()**:
+This function returns the URL of the Strapi API. We are setting our environment name to `NEXT_PUBLIC_`, which will be available in both the server and client components.
+
+**Note:** only set public for none private items when using `NEXT_PUBLIC_`, they will be seen by all. You can learn more in Next.js [docs](https://nextjs.org/docs/app/building-your-application/configuring/environment-variables#bundling-environment-variables-for-the-browser).
 
 Now that we have our **StrapiImage** component let's use it in our Hero Section.
 
@@ -102,23 +101,67 @@ Second, replace the `img` tag with the following.
 <StrapiImage
   alt={image.alternativeText ?? "no alternative text"}
   className="absolute inset-0 object-cover w-full h-full aspect/16:9"
-  src={imageURL}
+  src={image.url}
   height={1080}
   width={1920}
 />
 ```
 
-Restart the application, and... you will see the following error.
+The completed code should look like this:
 
-![002-image-error.png](https://api-prod.strapi.io/uploads/002_image_error_08ac2a26d3.png)
+```tsx
+import Link from "next/link";
+import { StrapiImage } from "./strapi-image";
+import { IHeroSection } from "@/types";
+
+const styles = {
+  header: "relative h-[600px] overflow-hidden",
+  backgroundImage: "absolute inset-0 object-cover w-full h-full",
+  overlay:
+    "relative z-10 flex flex-col items-center justify-center h-full text-center text-white bg-black/50",
+  heading: "text-4xl font-bold md:text-5xl lg:text-6xl",
+  subheading: "mt-4 text-lg md:text-xl lg:text-2xl",
+  button:
+    "mt-8 inline-flex items-center justify-center px-6 py-3 text-base font-medium text-black bg-white rounded-md shadow hover:bg-gray-100 transition-colors",
+};
+
+export function HeroSection({ data }: { data: IHeroSection }) {
+  if (!data) return null;
+  const { heading, subHeading, image, link } = data;
+  return (
+    <header className={styles.header}>
+      <StrapiImage
+        alt={image.alternativeText ?? "no alternative text"}
+        className="absolute inset-0 object-cover w-full h-full aspect/16:9"
+        src={image.url}
+        height={1080}
+        width={1920}
+      />
+      <div className={styles.overlay}>
+        <h1 className={styles.heading}>{heading}</h1>
+        <p className={styles.subheading}>{subHeading}</p>
+        <Link className={styles.button} href={link.href}>
+          {link.label}
+        </Link>
+      </div>
+    </header>
+  );
+}
+```
+
+When you restart the application, and... you will see the following error.
+
+![next-image-error.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/next_image_error_735a2cec06.png)
 
 Clicking on the link in the error will take you [here](https://nextjs.org/docs/messages/next-image-unconfigured-host), which explains the steps to fix this.
 
-Inside the root of your project, locate the `next.config.mjs` file and make the following change.
+Inside the root of your project, locate the `next.config.ts` file and make the following change.
 
 ```js
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
   images: {
     remotePatterns: [
       {
@@ -134,11 +177,9 @@ const nextConfig = {
 export default nextConfig;
 ```
 
-Since we have a fall back URL inside our image, we are also referencing it here.
-
 Now, when you restart your application, you should see the following with your image.
 
-![003-image-fix.png](/images/03-epic-next/003-image-fix.png)
+![Screenshot 2025-08-13 at 9.41.49 AM.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/Screenshot_2025_08_13_at_9_41_49_AM_6db5668b20.png)
 
 Nice, now let's work on our **Features Section**
 
@@ -160,44 +201,44 @@ So, let's jump into our Strapi Admin and create our **Features Section** Compone
 
 Let's start by navigating to `Content-Type Builder` under `COMPONENTS`, clicking on `Create new component`, and let's call it **Features Section** and save it under the `layout` category.
 
-![005-create-features-section.png](/images/03-epic-next/005-create-features-section.png)
+![2025-08-13_10-00-37.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/2025_08_13_10_00_37_471f106f1f.png)
 
 We will create the following fields.
 
 Text -> Short Text - title
 Text -> Long Text - description
 
-![006-create-features-fields.png](/images/03-epic-next/006-create-features-fields.png)
+![2025-08-13_10-04-43.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/2025_08_13_10_04_43_228901b099.png)
 
 Finally, let's create a repeatable component called **Feature** and save it under **components**
 
-![007-create-features-component.gif](/images/03-epic-next/007-create-features-component.gif)
+![adding-feature.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/adding_feature_6dcd236d87.gif)
 
 Now, add the following fields.
 
-Text -> Short Text - heading
-Text -> Long Text - subHeading
-Enum -> with the following options
+heading -> Text -> Short Text - heading
+subHeading -> Text -> Long Text - subHeading
+icon -> Enum -> with the following options
 
 - CLOCK_ICON
 - CHECK_ICON
 - CLOUD_ICON
 
-![008-create-features-component-field.gif](/images/03-epic-next/008-create-features-component-field.gif)
+![adding-fields-feature.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/adding_fields_feature_45affb7d87.gif)
 
 Let's add our newly created **Feature Section** component to our home page.
 
-![009-add-features-to-page.gif](/images/03-epic-next/009-add-features-to-page.gif)
+![add-features-to-page.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/add_features_to_page_3ee77c39c4.gif)
 
 Now, let's add some features data and save.
 
 Navigate to **Content Manager**, select the **Home Page**, add the new **Features Section** block, and fill in your features.
 
-![010-adding-data.gif](/images/03-epic-next/010-adding-data.gif)
+![add-yout-features-content.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/add_yout_features_content_17a7d4982c.gif)
 
 We are already getting our page data; let's navigate to `src/app/page.tsx` and update our query to populate our `feature` repeatable component.
 
-![011-populate-feature.png](/images/03-epic-next/011-populate-feature.png)
+![2025-08-13_10-51-52.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/2025_08_13_10_51_52_1cd8874187.png)
 
 Let's update the `homePageQuery` query with the following changes. Remember in **Strapi 5** we have to user the `on` flag to populate our dynamic zone components.
 
@@ -231,14 +272,17 @@ const homePageQuery = qs.stringify({
 
 Also, let's update our `getStrapiData` function to use our new helper method, `getStrapiURL.` So it will look like the following.
 
+So don't forget to import it.
+
+```jsx
+import { getStrapiURL } from "@/lib/utils";
+```
+
 ```jsx
 async function getStrapiData(path: string) {
   const baseUrl = getStrapiURL();
-
   const url = new URL(path, baseUrl);
   url.search = homePageQuery;
-
-  console.log(url.href);
 
   try {
     const response = await fetch(url.href);
@@ -262,16 +306,17 @@ We should see the following data.
 [
   {
     __component: "layout.hero-section",
-    id: 3,
-    heading: "Epic Next.js Tutorial",
-    subHeading: "It's awesome just like you.",
+    id: 4,
+    heading: "Summarize Your Videos With Ease",
+    subHeading:
+      "Get back your time by getting all the key points with out watching the whole video.",
     image: {
-      id: 1,
-      documentId: "fzwtij74oqqf9yasu9mit953",
-      url: "/uploads/computer_working_3aee40bab7.jpg",
+      id: 2,
+      documentId: "bqs73cv7n0r7c08bsi2rdsww",
+      url: "/uploads/pexels_anna_nekrashevich_7552374_00d755b030.jpg",
       alternativeText: null,
     },
-    link: { id: 3, url: "/login", text: "Login", isExternal: false },
+    link: { id: 4, href: "/login", label: "Login", isExternal: null },
   },
   {
     __component: "layout.features-section",
@@ -289,14 +334,13 @@ We should see the following data.
       {
         id: 5,
         heading: "Accurate Summaries",
-        subHeading:
-          "Our AI-powered tool provides accurate summaries of your videos.",
+        subHeading: "Our AI-powered tool provides summaries of your content.",
         icon: "CHECK_ICON",
       },
       {
         id: 6,
         heading: "Cloud Based",
-        subHeading: "Access your video. summaries from anywhere at any time.",
+        subHeading: "Access your video summaries from anywhere at any time.",
         icon: "CLOUD_ICON",
       },
     ],
@@ -312,45 +356,44 @@ Now, let's create a component to display our feature data.
 
 Let's navigate to `src/app/components/custom`, create a file called `features-section.tsx,` and paste it into the following code.
 
-```jsx
-function getIcon(name: string) {
-  switch (name) {
-    case "CLOCK_ICON":
-      return ClockIcon;
-    case "CHECK_ICON":
-      return CheckIcon;
-    case "CLOUD_ICON":
-      return CloudIcon;
-    default:
-      return null;
-  }
-}
+```tsx
+import React from "react";
 
-export function FeatureSection() {
+const styles = {
+  container: "flex-1",
+  section: "container px-4 py-6 mx-auto md:px-6 lg:py-24",
+  grid: "grid gap-8 md:grid-cols-3",
+  featureCard: "flex flex-col items-center text-center",
+  icon: "w-12 h-12 mb-4 text-gray-900",
+  heading: "mb-4 text-2xl font-bold",
+  description: "text-gray-500",
+};
+
+export function FeaturesSection() {
   return (
-    <div className="">
-      <div className="flex-1">
-        <section className="container px-4 py-6 mx-auto md:px-6 lg:py-24">
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="flex flex-col items-center text-center">
-              <ClockIcon className="w-12 h-12 mb-4 text-gray-900" />
-              <h2 className="mb-4 text-2xl font-bold">Save Time</h2>
-              <p className="text-gray-500">
+    <div>
+      <div className={styles.container}>
+        <section className={styles.section}>
+          <div className={styles.grid}>
+            <div className={styles.featureCard}>
+              <ClockIcon className={styles.icon} />
+              <h2 className={styles.heading}>Save Time</h2>
+              <p className={styles.description}>
                 No need to watch the entire video. Get the summary and save
                 time.
               </p>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <CheckIcon className="w-12 h-12 mb-4 text-gray-900" />
-              <h2 className="mb-4 text-2xl font-bold">Accurate Summaries</h2>
-              <p className="text-gray-500">
+            <div className={styles.featureCard}>
+              <CheckIcon className={styles.icon} />
+              <h2 className={styles.heading}>Accurate Summaries</h2>
+              <p className={styles.description}>
                 Our AI-powered tool provides accurate summaries of your videos.
               </p>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <CloudIcon className="w-12 h-12 mb-4 text-gray-900" />
-              <h2 className="mb-4 text-2xl font-bold">Cloud Based</h2>
-              <p className="text-gray-500">
+            <div className={styles.featureCard}>
+              <CloudIcon className={styles.icon} />
+              <h2 className={styles.heading}>Cloud Based</h2>
+              <p className={styles.description}>
                 Access your video summaries from anywhere at any time.
               </p>
             </div>
@@ -361,7 +404,7 @@ export function FeatureSection() {
   );
 }
 
-function CheckIcon(props: any) {
+function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -380,7 +423,7 @@ function CheckIcon(props: any) {
   );
 }
 
-function ClockIcon(props: any) {
+function ClockIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -400,7 +443,7 @@ function ClockIcon(props: any) {
   );
 }
 
-function CloudIcon(props: any) {
+function CloudIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -423,7 +466,7 @@ function CloudIcon(props: any) {
 We are currently hard-coding our data, which we will update in a moment. But let's navigate to `src/app/page.tsx`, import our newly created component, and see what we get.
 
 ```jsx
-import { FeatureSection } from "@/components/custom/features-section";
+import { FeaturesSection } from "@/components/custom/features-section";
 ```
 
 And update the `return` statement with the following code.
@@ -439,7 +482,7 @@ return (
 
 When we restart our application and refresh the page with `command + r`, we should see the following.
 
-![012-features-view.png](/images/03-epic-next/012-features-view.png)
+![Screenshot 2025-08-13 at 11.07.36 AM.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/Screenshot_2025_08_13_at_11_07_36_AM_3170bcb91c.png)
 
 Now, let's pass our data to our component and refactor our **Features Section** component to consume our data from Strapi.
 
@@ -447,14 +490,36 @@ Now, let's pass our data to our component and refactor our **Features Section** 
 return (
   <main>
     <HeroSection data={blocks[0]} />
-    <FeatureSection data={blocks[1]} />
+    <FeaturesSection data={blocks[1]} />
   </main>
 );
+```
+
+Let's first add the following types to our `types/index.ts` file:
+
+```ts
+type TFeature = {
+  id: number;
+  heading: string;
+  subHeading: string;
+  icon: string;
+};
+
+export interface IFeatureSection {
+  id: number;
+  __component: string;
+  title: string;
+  description: string;
+  feature: TFeature[];
+}
 ```
 
 And update our **Features Component** code with the following.
 
 ```jsx
+import React from "react";
+import { IFeatureSection } from "@/types";
+
 function getIcon(name: string) {
   switch (name) {
     case "CLOCK_ICON":
@@ -468,43 +533,29 @@ function getIcon(name: string) {
   }
 }
 
-interface FeatureProps {
-  id: number;
-  heading: string;
-  subHeading: string;
-  icon: string;
-}
+const styles = {
+  container: "flex-1",
+  section: "container px-4 py-6 mx-auto md:px-6 lg:py-24",
+  grid: "grid gap-8 md:grid-cols-3",
+  featureCard: "flex flex-col items-center text-center",
+  icon: "w-12 h-12 mb-4 text-gray-900",
+  heading: "mb-4 text-2xl font-bold",
+  description: "text-gray-500",
+};
 
-interface FeatureSectionProps {
-  id: number;
-  __component: string;
-  title: string;
-  description: string;
-  feature: FeatureProps[];
-}
-
-export function FeatureSection({
-  data,
-}: {
-  readonly data: FeatureSectionProps;
-}) {
+export function FeaturesSection({ data }: { data: IFeatureSection }) {
+  if (!data) return null;
   const { feature } = data;
-  console.dir(feature, { depth: null });
   return (
-    <div className="">
-      <div className="flex-1">
-        <section className="container px-4 py-6 mx-auto md:px-6 lg:py-24">
-          <div className="grid gap-8 md:grid-cols-3">
-            {feature.map((feature) => (
-              <div
-                key={feature.id}
-                className="flex flex-col items-center text-center"
-              >
-                {getIcon(feature.icon)}
-                <h2 className="mb-4 text-2xl font-bold">{feature.heading}</h2>
-                <p className="text-gray-500">
-                  {feature.subHeading}
-                </p>
+    <div>
+      <div className={styles.container}>
+        <section className={styles.section}>
+          <div className={styles.grid}>
+            {feature.map((item) => (
+              <div className={styles.featureCard} key={item.id}>
+                {getIcon(item.icon)}
+                <h2 className={styles.heading}>{item.heading}</h2>
+                <p className={styles.description}>{item.subHeading}</p>
               </div>
             ))}
           </div>
@@ -514,7 +565,7 @@ export function FeatureSection({
   );
 }
 
-function CheckIcon(props: any) {
+function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -533,7 +584,7 @@ function CheckIcon(props: any) {
   );
 }
 
-function ClockIcon(props: any) {
+function ClockIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -553,7 +604,7 @@ function ClockIcon(props: any) {
   );
 }
 
-function CloudIcon(props: any) {
+function CloudIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -571,158 +622,148 @@ function CloudIcon(props: any) {
     </svg>
   );
 }
-
 ```
 
 Our features component should now be utilizing our Strapi data.
 
-We do have to make one more change in the `page.tsx` file to make our code dynamically display our blocks based on what we get from our response.
+Before getting too far let's update the way we load data, and improve our types. Let's add the following in the `src/types/index.ts` file:
 
-To accomplish this, we will create a new function called `blockRenderer` and define it in the `page.tsx` file.
-
-It will look like the following:
-
-```jsx
-  const blockComponents = {
-    "layout.hero-section": HeroSection,
-    "layout.features-section": FeatureSection,
+```tsx
+export type TStrapiResponse<T = null> = {
+  success: boolean;
+  data?: T;
+  error?: {
+    status: number;
+    name: string;
+    message: string;
+    details?: Record<string, string[]>;
   };
-
-  function blockRenderer(block: any) {
-    const Component = blockComponents[block.__component as keyof typeof blockComponents];
-    return Component ? <Component key={block.id} data={block} /> : null;
-  }
+  meta?: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+  status: number;
+};
 ```
 
-We can refactor the code in our `page.tsx` component with the following code.
+Now that we have that, let's create a new folders in `src` called `data` and create the following file , it will be responsible for fetching our data.
 
-```jsx
-export default async function Home() {
-  const strapiData = await getStrapiData("/api/home-page");
+`fetch-data.tsx`
 
-  console.dir(strapiData, { depth: null });
+```ts
+import type { TStrapiResponse } from "@/types";
+// import { getAuthToken } from "./api/services/get-token";
 
-  const { blocks } = strapiData?.data || [];
-  return <main>{blocks.map(blockRenderer)}</main>;
-}
-```
+/**
+ * Fetch with timeout to prevent requests from hanging indefinitely
+ *
+ * Problem it solves:
+ * - Slow/broken servers can cause requests to hang forever
+ * - This blocks the UI and creates poor user experience
+ *
+ * How it works:
+ * - AbortController allows us to cancel the fetch request
+ * - setTimeout triggers the abort after the specified time
+ * - This ensures requests complete within a reasonable timeframe
+ */
 
-The completed code in the `page.tsx` file should look like the following.
+export async function fetchWithTimeout(
+  input: RequestInfo,
+  init: RequestInit = {},
+  timeoutMs = 8000 // 8 seconds default - good balance between patience and UX
+): Promise<Response> {
+  // Create controller to manage request cancellation
+  const controller = new AbortController();
 
-```jsx
-import qs from "qs";
-import { getStrapiURL } from "@/lib/utils";
-
-import { HeroSection } from "@/components/custom/hero-section";
-import { FeatureSection } from "@/components/custom/features-section";
-
-const homePageQuery = qs.stringify({
-  populate: {
-    blocks: {
-      on: {
-        "layout.hero-section": {
-          populate: {
-            image: {
-              fields: ["url", "alternativeText"],
-            },
-            link: {
-              populate: true,
-            },
-          },
-        },
-        "layout.features-section": {
-          populate: {
-            feature: {
-              populate: true,
-            },
-          },
-        },
-      },
-    },
-  },
-});
-
-async function getStrapiData(path: string) {
-  const baseUrl = getStrapiURL();
-
-  const url = new URL(path, baseUrl);
-  url.search = homePageQuery;
-
-  console.log(url.href);
+  // Set up automatic cancellation after timeout period
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(url.href);
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(error);
+    const response = await fetch(input, {
+      ...init,
+      signal: controller.signal, // Connect the abort signal to fetch
+    });
+    return response;
+  } finally {
+    // Always clean up the timeout to prevent memory leaks
+    // This runs whether the request succeeds, fails, or times out
+    clearTimeout(timeout);
   }
 }
 
-const blockComponents = {
-  "layout.hero-section": HeroSection,
-  "layout.features-section": FeatureSection,
-};
+export async function fetchData<T>(url: string): Promise<TStrapiResponse<T>> {
+  // const authToken = await getAuthToken();
 
-function blockRenderer(block: any) {
-  const Component = blockComponents[block.__component as keyof typeof blockComponents];
-  return Component ? <Component key={block.id} data={block} /> : null;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  // if (authToken) {
+  //   headers["Authorization"] = `Bearer ${authToken}`;
+  // }
+
+  try {
+    const response = await fetchWithTimeout(url, {
+      method: "GET",
+      headers,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // If Strapi returns a structured error, pass it back as-is
+      return data;
+    }
+
+    return data;
+  } catch (error) {
+    if ((error as Error).name === "AbortError") {
+      return {
+        error: {
+          status: 408,
+          name: "TimeoutError",
+          message: "The request timed out. Please try again.",
+        },
+        success: false,
+        status: 408,
+      } as TStrapiResponse<T>;
+    }
+    console.error("Fetch error:", error);
+    return {
+      error: {
+        status: 500,
+        name: "FetchError",
+        message:
+          error instanceof Error ? error.message : "Something went wrong",
+      },
+      success: false,
+      status: 500,
+    };
+  }
 }
-
-export default async function Home() {
-  const strapiData = await getStrapiData("/api/home-page");
-  console.dir(strapiData, { depth: null });
-  const { blocks } = strapiData?.data || [];
-
-  return (
-    <main>
-      {blocks.map(blockRenderer)}
-    </main>
-  );
-}
-
 ```
 
-Let's do one more quick refactor. In `src`, create a new folder named `data` with a file called `loaders.tsx`.
+**note:** I commented out the logic for using auth token, we will come back to this later in the tutorial.
 
-And add the following code.
+Inside your `data` folder, create a new file named `loaders.ts`. This file will act as a central hub for all the loaders we’ll use in the project.
+
+Add the following code:
 
 ```ts
 import qs from "qs";
+import type { TStrapiResponse, THomePage } from "@/types";
+
+import { fetchData } from "@/data/fetch-data";
 import { getStrapiURL } from "@/lib/utils";
 
 const baseUrl = getStrapiURL();
 
-async function fetchData(url: string) {
-  const authToken = null; // we will implement this later getAuthToken() later
-  const headers = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${authToken}`,
-    },
-  };
-
-  try {
-    const response = await fetch(url, authToken ? headers : {});
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error; // or return null;
-  }
-}
-```
-
-We will create a reusable function that will help us construct additional methods to load data.
-
-And finally, let's create a new function, `getHomePageData,` to load our home page data.
-
-```jsx
-export async function getHomePageData() {
-  const url = new URL("/api/home-page", baseUrl);
-
-  url.search = qs.stringify({
+async function getHomePageData(): Promise<TStrapiResponse<THomePage>> {
+  const query = qs.stringify({
     populate: {
       blocks: {
         on: {
@@ -748,44 +789,106 @@ export async function getHomePageData() {
     },
   });
 
-  return await fetchData(url.href);
+  const url = new URL("/api/home-page", baseUrl);
+  url.search = query;
+  return fetchData(url.href);
 }
+
+export const loaders = { getHomePageData };
 ```
 
-And finally, in the `pate.tsx` file, let's import this new function and delete the previous one.
+Placing this logic in a dedicated loaders.ts file with typed generics brings several advantages:
 
-Our final code should look like the following.
+- **Clear separation of concerns** – Pages handle only rendering, while all data-fetching logic lives in one place.
+- **Type safety** – Using TStrapiResponse<THomePage> ensures compile-time error checking and provides full IntelliSense support when working with API data.
+- **Reusability** – The fetchData utility can be used by multiple loaders, while each loader focuses on its specific query requirements.
+- **Easier maintenance** – Centralizing API logic in a single location makes debugging and testing simpler compared to having data-fetching scattered across components.
 
-```jsx
-import { getHomePageData } from "@/data/loaders";
+Now let's update our `page.tsx` file to use the new loader with the following code.
+
+```tsx
+import { loaders } from "@/data/loaders";
 
 import { HeroSection } from "@/components/custom/hero-section";
-import { FeatureSection } from "@/components/custom/features-section";
-
-const blockComponents = {
-  "layout.hero-section": HeroSection,
-  "layout.features-section": FeatureSection,
-};
-
-function blockRenderer(block: any) {
-  const Component = blockComponents[block.__component as keyof typeof blockComponents];
-  return Component ? <Component key={block.id} data={block} /> : null;
-}
+import { FeaturesSection } from "@/components/custom/features-section";
+import type { IHeroSection, IFeatureSection } from "@/types";
+import { notFound } from "next/navigation";
 
 export default async function Home() {
-  const strapiData = await getHomePageData();
+  const homePageData = await loaders.getHomePageData();
+  if (!homePageData?.data) notFound();
 
-  console.dir(strapiData, { depth: null });
-
-  const { blocks } = strapiData?.data || [];
+  const { blocks } = homePageData.data;
 
   return (
     <main>
-      {blocks.map(blockRenderer)}
+      <HeroSection data={blocks[0] as IHeroSection} />
+      <FeaturesSection data={blocks[1] as IFeatureSection} />
     </main>
   );
 }
+```
 
+Everything will still work as before, but we can make an improvement. Right now, our components are hardcoded, which works fine for now—but if we ever want to add more components in the future, it would be nice to handle them more dynamically.
+
+To do this, we can create a **block renderer** function:
+
+```tsx
+function blockRenderer(block: TBlocks, index: number) {
+  switch (block.__component) {
+    case "layout.hero-section":
+      return <HeroSection key={index} data={block as IHeroSection} />;
+    case "layout.features-section":
+      return <FeaturesSection key={index} data={block as IFeatureSection} />;
+    default:
+      return null;
+  }
+}
+```
+
+Don't to forget to import **TBlocks** type.
+
+```ts
+import type { IHeroSection, IFeatureSection, TBlocks } from "@/types";
+```
+
+And finally update the code in the return with the following:
+
+```tsx
+return <main>{blocks.map((block, index) => blockRenderer(block, index))}</main>;
+```
+
+The completed code should look as follows:
+
+```tsx
+import { loaders } from "@/data/loaders";
+
+import { HeroSection } from "@/components/custom/hero-section";
+import { FeaturesSection } from "@/components/custom/features-section";
+import type { IHeroSection, IFeatureSection, TBlocks } from "@/types";
+import { notFound } from "next/navigation";
+
+export default async function Home() {
+  const homePageData = await loaders.getHomePageData();
+  if (!homePageData?.data) notFound();
+
+  const { blocks } = homePageData.data;
+
+  function blockRenderer(block: TBlocks, index: number) {
+    switch (block.__component) {
+      case "layout.hero-section":
+        return <HeroSection key={index} data={block as IHeroSection} />;
+      case "layout.features-section":
+        return <FeaturesSection key={index} data={block as IFeatureSection} />;
+      default:
+        return null;
+    }
+  }
+
+  return (
+    <main>{blocks.map((block, index) => blockRenderer(block, index))}</main>
+  );
+}
 ```
 
 Nice. Let's move on and start working on our **Header** and **Footer**
@@ -812,7 +915,7 @@ We are going to call it `Global`. Go ahead and add the following fields.
 Text -> Short Text - title
 Text -> Long Text - description
 
-![015-global-content.gif](/images/03-epic-next/015-global-content.gif)
+![create-global-collection.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/create_global_collection_c64fd6b8d4.gif)
 
 Now, let's create the **Header** component. To start with, it will have two links: logo text and a `call to action` button.
 
@@ -820,21 +923,21 @@ Now, let's create the **Header** component. To start with, it will have two link
 
 In Strapi, inside the global page, let's add the following component.
 
-![016-add-heading-component.gif](/images/03-epic-next/016-add-heading-component.gif)
-
 - Click on `add another field to this single type.`
 - Select the `Component` field type
 - `Display Name` will be **Header**
-- Select `Category` will be `Layout`
+- Select `Category` will be `layout`
 - Click on `Configure the component` button
 - In the `Name` field, we will enter **header**
 - Finally, click on the `Add the first field to component` button
+
+![create-header-component.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/create_header_component_912d8c5a3e.gif)
 
 Now let's create two additional components called `logoText` and `ctaButton` to store our logo text and call to action button data.
 
 Since both will be links, we can reuse a previously created **Link** component.
 
-![017-create-logo-text.gif](/images/03-epic-next/017-create-logo-text.gif)
+![add-header-fields.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/add_header_fields_887b4aba6d.gif)
 
 - Select the `Component` field type
 - Click on `Use an existing component`
@@ -854,8 +957,7 @@ Since both will be links, we can reuse a previously created **Link** component.
 
 The final **Header** component should look like the following.
 
-![019-header.png](/images/03-epic-next/019-header.png)
-
+![2025-08-13_19-15-14.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/2025_08_13_19_15_14_7e7fc23691.png)
 Now that we are getting the hang of modeling content think about how we can represent our footer.
 
 ![020-footer.png](https://api-prod.strapi.io/uploads/020_footer_a56d630928.png)
@@ -870,7 +972,7 @@ Can you do it on your own?
 
 Our **Footer** will have the following fields.
 
-![021-footer-fields.png](/images/03-epic-next/021-footer-fields.png)
+![2025-08-13_18-55-23.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/2025_08_13_18_55_23_7c04f757b2.png)
 
 Our footer has the following three items.
 
@@ -878,13 +980,13 @@ If you get stuck at any point, you can always ask in the comments or join us at 
 
 Let's add some data to our **Global** single type.
 
-![022-add-global-content.gif](/images/03-epic-next/022-add-global-content.gif)
+![header-footer-data.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/header_footer_data_8ea85c94e7.gif)
 
 Now, let's give the proper permissions so we can access the data from our Strapi API.
 
 Navigate to `Setting` -> `USERS AND PERMISSION PLUGIN` -> `Roles` -> `Public` -> `Global` and check the `find` checkbox. We now should be able to make a `GET` request to `/api/global` and see our data.
 
-![023-permissions.png](/images/03-epic-next/023-permissions.png)
+![2025-08-13_19-06-33.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/2025_08_13_19_06_33_9bcf4c7bad.png)
 
 Since we have already learned about Strapi's **Populate**, we can jump straight into our frontend code and implement the function to fetch our **Global** data.
 
@@ -892,11 +994,9 @@ Since we have already learned about Strapi's **Populate**, we can jump straight 
 
 Let's navigate to `src/data/loaders.ts` and create a new function called `getGlobalData`; it should look like the following.
 
-```jsx
-export async function getGlobalData() {
-  const url = new URL("/api/global", baseUrl);
-
-  url.search = qs.stringify({
+```ts
+async function getGlobalData(): Promise<TStrapiResponse<TGlobal>> {
+  const query = qs.stringify({
     populate: [
       "header.logoText",
       "header.ctaButton",
@@ -905,8 +1005,42 @@ export async function getGlobalData() {
     ],
   });
 
-  return await fetchData(url.href);
+  const url = new URL("/api/global", baseUrl);
+  url.search = query;
+  return fetchData(url.href);
 }
+```
+
+Don't forget to add the TGlobal types in the `src/types/index.ts` file.
+
+```ts
+export type TGlobal = {
+  documentId: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  header: {
+    logoText: TLink;
+    ctaButton: TLink;
+  };
+  footer: {
+    logoText: TLink;
+    text: string;
+    socialLink: TLink[];
+  };
+};
+```
+
+Make sure to update the types import in the `loaders.ts` file and export **getGlobalData** function :
+
+```ts
+import type { TStrapiResponse, THomePage, TGlobal } from "@/types";
+
+// rest of code
+
+export const loaders = { getHomePageData, getGlobalData };
 ```
 
 One thing to notice here is that we are using `array` notation in populate, which is a great way to populate items that don't have many nested items.
@@ -921,19 +1055,19 @@ Since we can load data within our **React Server Component**, we can call the fu
 
 First, let's import our function.
 
-```jsx
-import { getGlobalData } from "@/data/loaders";
+```tsx
+import { loaders } from "@/data/loaders";
 ```
 
 Then, update the **RootLayout** with the following code.
 
-```jsx
+```tsx
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode,
+  children: React.ReactNode;
 }>) {
-  const globalData = await getGlobalData();
+  const globalData = await loaders.getGlobalData();
   console.dir(globalData, { depth: null });
   return (
     <html lang="en">
@@ -949,23 +1083,20 @@ export default async function RootLayout({
 
 The complete code should look like the following.
 
-```jsx
+```tsx
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { loaders } from "@/data/loaders";
 
-import { getGlobalData } from "@/data/loaders";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
+const geistSans = Geist({
   variable: "--font-geist-sans",
-  weight: "100 900",
+  subsets: ["latin"],
 });
 
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  weight: "100 900",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -976,9 +1107,9 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode,
+  children: React.ReactNode;
 }>) {
-  const globalData = await getGlobalData();
+  const globalData = await loaders.getGlobalData();
   console.dir(globalData, { depth: null });
   return (
     <html lang="en">
@@ -994,46 +1125,45 @@ export default async function RootLayout({
 
 Nice. Now restart your Next.js application, and we should see the following output in the terminal console.
 
-```js
+```bash
 {
   data: {
     id: 2,
-    documentId: 'fyj7ijjnkxy75h1cbusrafj2',
+    documentId: 'vcny1vttvfqm1hd8dd6390rp',
     title: 'Global Page',
-    description: 'Responsible for our header and footer.',
-    createdAt: '2024-10-02T18:44:37.585Z',
-    updatedAt: '2024-10-02T18:44:37.585Z',
-    publishedAt: '2024-10-02T18:44:37.594Z',
-    locale: null,
+    description: 'Responsible for our header and footer sections.',
+    createdAt: '2025-08-14T00:02:31.328Z',
+    updatedAt: '2025-08-14T00:02:31.328Z',
+    publishedAt: '2025-08-14T00:02:31.336Z',
     header: {
       id: 2,
-      ctaButton: { id: 11, url: '/', text: 'Login', isExternal: false },
-      logoText: { id: 10, url: '/', text: 'Summarize AI', isExternal: false }
+      ctaButton: { id: 12, href: '/signin', label: 'Sign In', isExternal: null },
+      logoText: { id: 11, href: '/', label: 'Summarize AI', isExternal: false }
     },
     footer: {
       id: 2,
-      text: 'Made with love by Paul',
+      text: 'Built with love by Paul 2025',
       socialLink: [
         {
-          id: 13,
-          url: 'www.youtube.com',
-          text: 'YouTube',
-          isExternal: true
-        },
-        {
           id: 14,
-          url: 'www.twitter.com',
-          text: 'Twitter',
+          href: 'www.youtube.com',
+          label: 'YouTube',
           isExternal: true
         },
         {
           id: 15,
-          url: 'www.linkedin.com',
-          text: 'LinkedIn',
+          href: 'www.linkedin.com',
+          label: 'LinkedIn',
+          isExternal: true
+        },
+        {
+          id: 16,
+          href: 'www.twitter.com',
+          label: 'Twitter',
           isExternal: true
         }
       ],
-      logoText: { id: 12, url: '/', text: 'Summarize AI', isExternal: false }
+      logoText: { id: 13, href: '/', label: 'Summarize AI', isExternal: null }
     }
   },
   meta: {}
@@ -1053,10 +1183,20 @@ Just as a reminder, our logo has two items. A **logo** and **button** , so let's
 
 Navigate to `src/app/components/custom`, create a file called `logo.tsx,` and add the following code.
 
-```jsx
+```tsx
 import Link from "next/link";
 
-function MountainIcon(props: any) {
+const styles = {
+  link: "flex items-center gap-2",
+  icon: "h-6 w-6 text-pink-500",
+  text: {
+    base: "text-lg font-semibold",
+    light: "text-slate-900",
+    dark: "text-white",
+  },
+};
+
+function MountainIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -1075,21 +1215,18 @@ function MountainIcon(props: any) {
   );
 }
 
-interface LogoProps {
-  text?: string;
+interface ILogo {
+  text: string;
   dark?: boolean;
 }
 
-export function Logo({
-  text = "Logo Text",
-  dark = false,
-}: Readonly<LogoProps>) {
+export function Logo({ text, dark = false }: Readonly<ILogo>) {
   return (
-    <Link className="flex items-center gap-2" href="/">
-      <MountainIcon className={"h-6 w-6  text-pink-500"} />
+    <Link className={styles.link} href="/">
+      <MountainIcon className={styles.icon} />
       <span
-        className={`text-lg font-semibold ${
-          dark ? "text-white" : "text-slate-900"
+        className={`${styles.text.base} ${
+          dark ? styles.text.dark : styles.text.light
         }`}
       >
         {text}
@@ -1103,38 +1240,26 @@ It is a simple component that expects `text` as a prop to display the name of ou
 
 Next, let's create our actual **Header** component. Navigate to `src/app/components/custom`, create a file called `header.tsx,` and add the following code.
 
-```jsx
+```tsx
 import Link from "next/link";
-import { Logo } from "@/components/custom/Logo";
+import type { THeader } from "@/types";
+import { Logo } from "@/components/custom/logo";
 import { Button } from "@/components/ui/button";
 
-interface HeaderProps {
-  data: {
-    logoText: {
-      id: number;
-      text: string;
-      url: string;
-    }
-    ctaButton: {
-      id: number;
-      text: string;
-      url: string;
-    };
-  }
-}
-
-export async function Header({ data }: Readonly<HeaderProps>) {
+export function Header({ data }: { data: THeader | undefined }) {
+  if (!data) return null;
   const { logoText, ctaButton } = data;
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white shadow-md dark:bg-gray-800">
-      <Logo text={logoText.text}/>
+      <Logo text={logoText.label} />
       <div className="flex items-center gap-4">
-        <Link href={ctaButton.url}><Button>{ctaButton.text}</Button></Link>
+        <Link href={ctaButton.href}>
+          <Button>{ctaButton.label}</Button>
+        </Link>
       </div>
     </div>
   );
 }
-
 ```
 
 The component expects our `header` props, which we already get from our `getGlobalData` function found in the `layout.tsx` file.
@@ -1143,7 +1268,7 @@ So let's navigate to `src/app/layout.tsx` file and make the following updates.
 
 First, let's import our **Header** component.
 
-```jsx
+```tsx
 import { Header } from "@/components/custom/header";
 ```
 
@@ -1152,10 +1277,9 @@ Next, make the following change in the `return` statement.
 ```jsx
 return (
   <html lang="en">
-    <body className={inter.className}>
-      <Header data={globalData.data.header} /> // add our header and pass in the
-      data
-      <div>{children}</div>
+    <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <Header data={globalData?.data?.header} />
+      {children}
     </body>
   </html>
 );
@@ -1163,7 +1287,7 @@ return (
 
 Restart your project, and you should now see our awesome top navigation.
 
-![024-top-nav.png](/images/03-epic-next/024-top-nav.png)
+![Screenshot 2025-08-13 at 7.59.10 PM.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/Screenshot_2025_08_13_at_7_59_10_PM_a680338cfe.png)
 
 ### Building Our Footer In Next.js
 
@@ -1175,52 +1299,47 @@ Our footer will display the following items.
 
 Navigate to `src/app/components/custom,` create a file called `footer.tsx,` and add the following code.
 
-```jsx
+```tsx
 import Link from "next/link";
-import { Logo } from "@/components/custom/Logo";
+import type { TFooter } from "@/types";
+import { Logo } from "@/components/custom/logo";
 
-interface SocialLink {
-  id: number;
-  text: string;
-  url: string;
-}
-
-interface FooterProps {
-  data: {
-    logoText: {
-      id: number,
-      text: string,
-      url: string,
-    },
-    text: string,
-    socialLink: SocialLink[],
-  };
-}
+const styles = {
+  footer: "dark bg-gray-900 text-white py-8",
+  container:
+    "container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between",
+  text: "mt-4 md:mt-0 text-sm text-gray-300",
+  socialContainer: "flex items-center space-x-4",
+  socialLink: "text-white hover:text-gray-300",
+  icon: "h-6 w-6",
+  srOnly: "sr-only",
+};
 
 function selectSocialIcon(url: string) {
-  if (url.includes("youtube")) return <YoutubeIcon className="h-6 w-6" />;
-  if (url.includes("twitter")) return <TwitterIcon className="h-6 w-6" />;
-  if (url.includes("github")) return <GithubIcon className="h-6 w-6" />;
+  if (url.includes("youtube")) return <YoutubeIcon className={styles.icon} />;
+  if (url.includes("twitter")) return <TwitterIcon className={styles.icon} />;
+  if (url.includes("github")) return <GithubIcon className={styles.icon} />;
   return null;
 }
 
-export function Footer({ data }: Readonly<FooterProps>) {
+export function Footer({ data }: { data: TFooter | undefined }) {
+  if (!data) return null;
   const { logoText, socialLink, text } = data;
   return (
-    <div className="dark bg-gray-900 text-white py-8">
-      <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
-        <Logo dark text={logoText.text} />
-        <p className="mt-4 md:mt-0 text-sm text-gray-300">{text}</p>
-        <div className="flex items-center space-x-4">
+    <div className={styles.footer}>
+      <div className={styles.container}>
+        <Logo dark text={logoText.label} />
+        <p className={styles.text}>{text}</p>
+        <div className={styles.socialContainer}>
           {socialLink.map((link) => {
             return (
               <Link
-                className="text-white hover:text-gray-300"
-                href={link.url}
+                className={styles.socialLink}
+                href={link.href}
                 key={link.id}
               >
-                {selectSocialIcon(link.url)}
-                <span className="sr-only">Visit us at {link.text}</span>
+                {selectSocialIcon(link.href)}
+                <span className={styles.srOnly}>Visit us at {link.label}</span>
               </Link>
             );
           })}
@@ -1230,7 +1349,7 @@ export function Footer({ data }: Readonly<FooterProps>) {
   );
 }
 
-function GithubIcon(props: any) {
+function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -1250,7 +1369,7 @@ function GithubIcon(props: any) {
   );
 }
 
-function TwitterIcon(props: any) {
+function TwitterIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -1269,7 +1388,7 @@ function TwitterIcon(props: any) {
   );
 }
 
-function YoutubeIcon(props: any) {
+function YoutubeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -1296,36 +1415,11 @@ The code is responsible for rendering our **Footer** data.
 
 **note**: When adding social links, I only included Twitter, Github, and YouTube. If you have additional links, you will need to add more icons to represent them.
 
-Here is what my response looks like with my social links.
-
-```js
-[
-  {
-    id: 25,
-    url: "www.youtube.com",
-    text: "YouTube",
-    isExternal: true,
-  },
-  {
-    id: 26,
-    url: "www.twitter.com",
-    text: "Twitter",
-    isExternal: true,
-  },
-  {
-    id: 27,
-    url: "www.github.com",
-    text: "GitHub",
-    isExternal: true,
-  },
-];
-```
-
 Now that we have completed our footer, let's add it to the layout.tsx file in the root of our app folder.
 
 First, let's import our **Footer** component.
 
-```jsx
+```tsx
 import { Footer } from "@/components/custom/footer";
 ```
 
@@ -1333,121 +1427,77 @@ Next, make the following change in the `return` statement.
 
 ```jsx
 return (
-  <html lang="en">
-    <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <Header data={globalData.data.header} />
-      {children}
-      <Footer data={globalData.data.footer} />
-    </body>
-  </html>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <Header data={globalData?.data?.header} />
+        {children}
+        <Footer data={globalData?.data?.footer} />
+      </body>
+    </html>
+  );
 );
+```
+
+The complet file looks like the following:
+
+```tsx
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { loaders } from "@/data/loaders";
+
+import { Header } from "@/components/custom/header";
+import { Footer } from "@/components/custom/footer";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Create Next App",
+  description: "Generated by create next app",
+};
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const globalData = await loaders.getGlobalData();
+  console.dir(globalData, { depth: null });
+  return (
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <Header data={globalData?.data?.header} />
+        {children}
+        <Footer data={globalData?.data?.footer} />
+      </body>
+    </html>
+  );
+}
 ```
 
 Now, if you restart the Next.js application, you should see the following changes.
 
-![025-footer-data.png](https://api-prod.strapi.io/uploads/025_footer_data_0902f2d26e.png)
+![Screenshot 2025-08-13 at 8.08.34 PM.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/Screenshot_2025_08_13_at_8_08_34_PM_2ae6e06f60.png)
 
 Yay, we are now getting our data from our Strapi API.
-
-If you don't see the changes, it is because Next.js is caching our old data.
-
-## Let's revisit Next.js Data Caching
-
-Next.js caching is a big topic, so make sure to read the docs [here](https://nextjs.org/docs/app/building-your-application/caching)
-
-In the current state of our app, Next.js is caching our data.
-
-You will get the following output if we run `yarn build`.
-
-```bash
- ✓ Generating static pages (5/5)
- ✓ Collecting build traces
- ✓ Finalizing page optimization
-
-Route (app)                              Size     First Load JS
-┌ ○ /                                    5.2 kB         96.3 kB
-└ ○ /_not-found                          885 B          85.2 kB
-+ First Load JS shared by all            84.3 kB
-  ├ chunks/69-3c42ded033075db6.js        29 kB
-  ├ chunks/fd9d1056-c7082c319cc53ced.js  53.4 kB
-  └ other shared chunks (total)          1.86 kB
-
-
-○  (Static)  prerendered as static content
-
-✨  Done in 10.65s.
-
-```
-
-Our content is statically generated, so to update our app with the changes, we would have to rebuild our site.
-
-There are two ways we can handle this in `development` while we are working with our app.
-
-We can keep everything as is and use `command-shift-r` to reload the cache, which I was reminded of when chatting with Lee Robinson. I always forget about this. You can follow him on [Twitter](https://twitter.com/leeerob).
-
-Or we can opt out of caching. Outside of the previous method discussed, we can use the `noStore` function; you can read more about it [here](https://nextjs.org/docs/app/api-reference/functions/unstable_noStore).
-
-I will show the code for the `noStore` function, but in this tutorial, we will just use `command-shift-r` to refresh the cache.
-So, let's navigate to our `src/data/loaders.ts` file, you can make the following changes.
-
-First, let's import the `noStore` function.
-
-```bash
-import { unstable_noStore as noStore } from 'next/cache';
-```
-
-Now, let's use it inside the `getGlobalData` that is responsible for our social links.
-
-```ts
-export async function getGlobalData() {
-  noStore();
-  const url = new URL("/api/global", baseUrl);
-
-  url.search = qs.stringify({
-    populate: [
-      "header.logoText",
-      "header.ctaButton",
-      "footer.logoText",
-      "footer.socialLink",
-    ],
-  });
-
-  return await fetchData(url.href);
-}
-```
-
-Now run the `yarn build` command, and you will see the following output.
-
-```bash
-Route (app)                              Size     First Load JS
-┌ λ /                                    5.2 kB         96.3 kB
-└ λ /_not-found                          885 B          85.2 kB
-+ First Load JS shared by all            84.3 kB
-  ├ chunks/69-3c42ded033075db6.js        29 kB
-  ├ chunks/fd9d1056-c7082c319cc53ced.js  53.4 kB
-  └ other shared chunks (total)          1.86 kB
-
-
-λ  (Dynamic)  server-rendered on demand using Node.js
-
-✨  Done in 10.48s.
-```
-
-Notice that our `/` route now has the `λ` symbol, which demonstrates that it is now server-rendered on demand.
-
-This is due to using `noStore` please note Even though `noStore` is defined at the component level, the entire route becomes dynamic.
-
-If we reorder our social links in our **Strapi Admin** panel now, our changes will reflect on our Next.js frontend.
-
-note: you don't need to use `noStore` I just wanted to show you that it exists, and you can continue to refresh the site with `command-shift-r`.
-
-In future posts we will take look how to use `revalidatePath` to revalidate our cache.
 
 ## How To Populate Our Metadata Dynamically In Next.js
 
 We have a `title` and `description` on our **Global** page in Strapi.
 
-![033-metadata.png](/images/03-epic-next/033-metadata.png)
+![033-metadata.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/033_metadata_8e407cfa95.png)
 
 Let's use it as our `metadata` information in our app.
 
@@ -1511,11 +1561,10 @@ Now, replace the previous `export const metadata: Metadata` with the following c
 ```jsx
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getGlobalPageMetadata();
-  const { title, description } = metadata?.data;
 
   return {
-    title: title ?? "Epic Next Course",
-    description: description ?? "Epic Next Course",
+    title: metadata?.data?.title ?? "Epic Next Course",
+    description: metadata?.data?.description ?? "Epic Next Course",
   };
 }
 ```
@@ -1539,7 +1588,6 @@ const geistSans = localFont({
   variable: "--font-geist-sans",
   weight: "100 900",
 });
-
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -1548,11 +1596,10 @@ const geistMono = localFont({
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getGlobalPageMetadata();
-  const { title, description } = metadata?.data;
 
   return {
-    title: title ?? "Epic Next Course",
-    description: description ?? "Epic Next Course",
+    title: metadata?.data?.title ?? "Epic Next Course",
+    description: metadata?.data?.description ?? "Epic Next Course",
   };
 }
 
@@ -1583,7 +1630,7 @@ Nice job.
 
 Our landing page looks great, but we have a small problem. We have not yet implemented the `login` page, so when we click our link, we get the default not found page.
 
-![028-not-found-old.gif](https://api-prod.strapi.io/uploads/028_not_found_old_f9a90f4139.gif)
+![404-not-found.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/404_not_found_1719e2f16a.gif)
 
 But why, if we wanted to make it prettier, how can we accomplish this?
 
@@ -1591,64 +1638,99 @@ Well, we can create the `not-found.js` page. You can learn more about it [here](
 
 Navigate to `src/app,` create a file called `not-found.tsx,` and add the following code.
 
-```jsx
-import Link from "next/link";
+```tsx
+"use client";
 
-export default function NotFoundRoot() {
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Home, Search, ArrowLeft } from "lucide-react";
+
+const styles = {
+  container:
+    "min-h-[calc(100vh-200px)] mx-auto container my-8 bg-gradient-to-br rounded-lg shadow-md bg-secondary flex items-center justify-center p-4",
+  content: "max-w-2xl mx-auto text-center space-y-8",
+  textSection: "space-y-4",
+  heading404: "text-9xl font-bold text-primary select-none",
+  headingContainer: "relative",
+  pageTitle: "text-4xl font-bold text-slate-800 mb-4",
+  description: "text-lg text-slate-600 max-w-md mx-auto leading-relaxed",
+  illustrationContainer: "flex justify-center py-8",
+  illustration: "relative animate-pulse",
+  searchCircle:
+    "w-32 h-32 bg-slate-200 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-slate-300",
+  searchIcon: "w-16 h-16 text-slate-400",
+  errorBadge:
+    "absolute -top-2 -right-2 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center animate-bounce",
+  errorSymbol: "text-red-500 text-xl font-bold",
+  buttonContainer:
+    "flex flex-col sm:flex-row gap-4 justify-center items-center",
+  button: "min-w-[160px]",
+  buttonContent: "flex items-center gap-2",
+  buttonIcon: "w-4 h-4",
+  outlineButton: "min-w-[160px] bg-transparent",
+};
+
+export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <div className="space-y-4">
-        <BugIcon className="h-24 w-24 text-pink-500 dark:text-pink-400" />
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-          Oops!
-        </h1>
-        <p className="text-lg text-gray-700 dark:text-gray-300">
-          This page has left the building.
-        </p>
-        <Link
-          href="/"
-          className="inline-flex h-10 items-center justify-center rounded-md bg-gray-900 px-8 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-        >
-          Go back home
-        </Link>
+    <div className={styles.container}>
+      <div className={styles.content}>
+        {/* Large 404 Text */}
+        <div className={styles.textSection}>
+          <h1 className={styles.heading404}>404</h1>
+          <div className={styles.headingContainer}>
+            <h2 className={styles.pageTitle}>Page Not Found</h2>
+            <p className={styles.description}>
+              Oops! The page you&apos;re looking for seems to have wandered off
+              into the digital wilderness.
+            </p>
+          </div>
+        </div>
+
+        {/* Illustration */}
+        <div className={styles.illustrationContainer}>
+          <div className={styles.illustration}>
+            <div className={styles.searchCircle}>
+              <Search className={styles.searchIcon} />
+            </div>
+            <div className={styles.errorBadge}>
+              <span className={styles.errorSymbol}>✕</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className={styles.buttonContainer}>
+          <Button asChild size="lg" className={styles.button}>
+            <Link href="/" className={styles.buttonContent}>
+              <Home className={styles.buttonIcon} />
+              Go Home
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className={styles.outlineButton}
+          >
+            <button
+              onClick={() => window.history.back()}
+              className={styles.buttonContent}
+            >
+              <ArrowLeft className={styles.buttonIcon} />
+              Go Back
+            </button>
+          </Button>
+        </div>
       </div>
     </div>
-  );
-}
-
-function BugIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="m8 2 1.88 1.88" />
-      <path d="M14.12 3.88 16 2" />
-      <path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1" />
-      <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" />
-      <path d="M12 20v-9" />
-      <path d="M6.53 9C4.6 8.8 3 7.1 3 5" />
-      <path d="M6 13H2" />
-      <path d="M3 21c0-2.1 1.7-3.9 3.8-4" />
-      <path d="M20.97 5c0 2.1-1.6 3.8-3.5 4" />
-      <path d="M22 13h-4" />
-      <path d="M17.2 17c2.1.1 3.8 1.9 3.8 4" />
-    </svg>
   );
 }
 ```
 
 Now restart your app and navigate to our `login` page. You will be treated to this nicer page. It can be better, but you get the point.
 
-![029-not-found-new.gif](https://api-prod.strapi.io/uploads/029_not_found_new_ac2c9e5e08.gif)
+![404-new.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/404_new_bc959ceccc.gif)
 
 Wouldn't it be nice to show a loaded spinner when navigation pages are displayed? Yes, it would. Let's see how we can do that.
 
@@ -1660,19 +1742,27 @@ This creates a file called `loading.tsx`. You can read about other ways [here](h
 
 Navigate to `src/app`, create a file called `loading.tsx`, and add the following code.
 
-```jsx
+```tsx
+const styles = {
+  overlay:
+    "fixed inset-0 flex items-center justify-center bg-gray-200 bg-opacity-50",
+  spinner: "animate-spin h-12 w-12 border-t-4 border-pink-600 rounded-full",
+};
+
 export default function Loading() {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-200 bg-opacity-50">
-      <div className="animate-spin h-12 w-12 border-t-4 border-pink-600 rounded-full" />
+    <div className={styles.overlay}>
+      <div className={styles.spinner} />
     </div>
   );
 }
 ```
 
+For now we are going to stick with this approach, but latter we can take a look how to show a skeleton while our component loads.
+
 That is all we need to do. Now, let's restart our application and see the amazing loader in action. If you find my loader too boring, feel free to add your own design flair to your application.
 
-![030-loading-page.gif](https://api-prod.strapi.io/uploads/030_loading_page_3927de1faf.gif)
+![loading.gif](https://delicate-dawn-ac25646e6d.media.strapiapp.com/loading_ca2fd0ed7f.gif)
 
 Finally, let's take a look at how we can handle errors in our application.
 
@@ -1809,4 +1899,18 @@ I can't wait to see the next post, where we cover how to create our **Sign In** 
 
 I am so excited. Thanks for checking out this post. I look forward to seeing you in the next one.
 
-Project Repo: https://github.com/PaulBratslavsky/epic-next-strapi-5-update/tree/03-epic-next
+### Note about this project
+
+This project has been updated to use Next.js 15 and Strapi 5.
+
+If you have any questions, feel free to stop by at our [Discord Community](https://discord.com/invite/strapi) for our daily "open office hours" from 12:30 PM CST to 1:30 PM CST.
+
+If you have a suggestion or find a mistake in the post, please open an issue on the [GitHub repository](https://github.com/PaulBratslavsky/epic-next-15-strapi-5).
+
+You can also find the blog post content in the [Strapi Blog](https://github.com/PaulBratslavsky/epic-next-15-strapi-5/tree/main/blog/blog-posts).
+
+Feel free to make PRs to fix any issues you find in the project, or let me know if you have any questions.
+
+Happy coding!
+
+- Paul
